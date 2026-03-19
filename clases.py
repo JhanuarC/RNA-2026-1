@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
+from scipy.optimize import differential_evolution
 from matplotlib import cm
 
-class G_rosenbrock:#Clase para la función de Rosenbrock, usando metodos descenso por gradiente
+class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos descenso por gradiente
     def __init__(self, a=1.0, b=100.0):
         self.a = a
         self.b = b
@@ -117,7 +118,7 @@ class G_rosenbrock:#Clase para la función de Rosenbrock, usando metodos descens
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
 
-class G_schwefel:#Clase para la función de Schwefel, usando metodos descenso por gradiente
+class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso por gradiente
     def __init__(self):
         pass
         self.historia_2d = []
@@ -190,7 +191,7 @@ class G_schwefel:#Clase para la función de Schwefel, usando metodos descenso po
         except Exception as e:
             print(f"No se pudo graficar el punto óptimo: {e}")
 
-    def graficar_2d(self,res_2d):
+    def grafica_2d(self,res_2d):
         x = np.linspace(-500, 500, 250)
         y = np.linspace(-500, 500, 250)
         X, Y = np.meshgrid(x, y)
@@ -226,11 +227,95 @@ class G_schwefel:#Clase para la función de Schwefel, usando metodos descenso po
         self.resultados(res_2d, res_3d)
         self.graficar_evo()
         self.grafica_3d(res_3d)
-        self.graficar_2d(res_2d)
+        self.grafica_2d(res_2d)
 
 
-rosen = G_rosenbrock()
-rosen.ejecutar()
+"""
+A partir de aqui se usaran metodos de optimización más avanzados, como algoritmos evolutivos
+o PSO, para intentar encontrar el mínimo global de estas funciones, 
+ya que el método BFGS es un método de optimización local y puede quedarse atrapado en mínimos locales, 
+especialmente en funciones tan complejas como Schwefel.
+"""
 
-rosen = G_schwefel()
-rosen.ejecutar()
+#Algoritmo para evolción diferencial
+
+class Rosenbrock_de(Rosenbrock_sgd):#Clase para la función de Rosenbrock, usando algoritmo de evolución diferencial
+    def __init__(self,bounds=None):
+        super().__init__()
+        self.bounds = bounds
+        self.historia_2d = []
+        self.historia_3d = []
+
+    def monitor_progreso_2d(self,xk,convergencia):#Función de callback para evolución diferencial, se llama en cada iteración con el punto actual y la convergencia
+        self.historia_2d.append(self.evaluate(xk))
+
+    def monitor_progreso_3d(self,xk,convergencia):
+        self.historia_3d.append(self.evaluate(xk))
+
+    def optimizar_2d(self):
+        self.bounds = [(-2, 2)]*2 #Rangos para la optimización en 2D
+        res_2d = differential_evolution(self.evaluate, bounds=self.bounds,callback=self.monitor_progreso_2d)#Optimimzacion 
+        return res_2d
+    
+    def optimizar_3d(self):
+        self.bounds = [(-2, 2)] * 3
+        res_3d = differential_evolution(self.evaluate, bounds=self.bounds,callback=self.monitor_progreso_3d)
+        return res_3d
+    
+    def resultados(self, res_2d, res_3d):
+        return super().resultados(res_2d, res_3d)
+    def graficar_evo(self):
+        return super().graficar_evo()
+    def grafica_3d(self,res_3d):    
+        return super().grafica_3d(res_3d)
+    def grafica_2d(self,res_2d):
+        return super().grafica_2d(res_2d)
+    
+    def ejecutar(self):
+        res_2d = self.optimizar_2d()
+        res_3d = self.optimizar_3d()
+        self.resultados(res_2d, res_3d)
+        self.graficar_evo()
+        self.grafica_3d(res_3d)
+        self.grafica_2d(res_2d)
+
+class Schwefel_de(Schwefel_sgd):#Clase para la función de Schwefel, usando algoritmo de evolución diferencial
+    def __init__(self,bounds=None):
+        super().__init__()
+        self.bounds = bounds
+        self.historia_2d = []
+        self.historia_3d = []
+
+    def monitor_progreso_2d(self,xk,convergencia):
+        self.historia_2d.append(self.evaluate(xk))
+
+    def monitor_progreso_3d(self,xk,convergencia):
+        self.historia_3d.append(self.evaluate(xk))
+
+    def optimizar_2d(self):
+        self.bounds = [(-500, 500)]*2 #Rangos para la optimización en 2D
+        res_2d = differential_evolution(self.evaluate, bounds=self.bounds,callback=self.monitor_progreso_2d)
+        return res_2d
+    
+    def optimizar_3d(self):
+        self.bounds = [(-500, 500)] * 3
+        res_3d = differential_evolution(self.evaluate, bounds=self.bounds,callback=self.monitor_progreso_3d)
+        return res_3d
+    
+    def resultados(self, res_2d, res_3d):
+        return super().resultados(res_2d, res_3d)
+    def graficar_evo(self):
+        return super().graficar_evo()
+    def grafica_3d(self,res_3d):    
+        return super().grafica_3d(res_3d)
+    def grafica_2d(self,res_2d):
+        return super().grafica_2d(res_2d)
+    
+    def ejecutar(self):
+        res_2d = self.optimizar_2d()
+        res_3d = self.optimizar_3d()
+        self.resultados(res_2d, res_3d)
+        self.graficar_evo()
+        self.grafica_3d(res_3d)
+        self.grafica_2d(res_2d)
+
