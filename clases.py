@@ -3,6 +3,11 @@ import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 from scipy.optimize import differential_evolution
 from matplotlib import cm
+import pyswarms as ps
+from pyswarms.utils.functions import single_obj as fx
+from pyswarms.utils.plotters import plot_cost_history, plot_contour, plot_surface
+from pyswarms.utils.plotters.formatters import Mesher, Designer, Animator
+
 
 class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos descenso por gradiente
     def __init__(self, a=1.0, b=100.0):
@@ -12,8 +17,8 @@ class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos desce
         self.historia_3d = []
 
     def evaluate(self, x):#Función de Rosenbrock, se puede usar tanto para 2D como para 3D dependiendo del tamaño de x
-        return np.sum(self.b*(x[1:] - x[:-1]**2.0)**2.0 + (self.a - x[:-1])**2.0)
-    
+            return np.sum(self.b*(x[1:] - x[:-1]**2.0)**2.0 + (self.a - x[:-1])**2.0)
+
     def callback_2d(self, xk):
         self.historia_2d.append(self.evaluate(xk))
     
@@ -124,10 +129,10 @@ class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso 
         self.historia_2d = []
         self.historia_3d = []
     
-    def evaluate(self,x):
-        # Si x es un vector (optimización), axis=0 suma sus elementos.
-        # Si x es una malla (gráfica), axis=0 suma las matrices correspondientes.
-        return 418.9829 * len(x) - np.sum(x * np.sin(np.sqrt(np.abs(x))),axis=0)
+    def evaluate(self, x):
+        # Si x es un vector (optimización), axis=1 (o sumatoria total) suma sus elementos.
+        # Si x es una matriz (pyswarms), axis=1 suma las dimensiones por cada partícula.
+            return 418.9829 * len(x) - np.sum(x * np.sin(np.sqrt(np.abs(x))),axis=0)
     
     def callback_2d(self,xk):
         self.historia_2d.append(self.evaluate(xk))
@@ -144,6 +149,7 @@ class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso 
         return res_3d
     
         # Comparación de resultados
+
     def resultados(self, res_2d, res_3d):
         print(f"--- RESULTADOS 2D ---")
         print(f"X óptimo: {res_2d.x}")
@@ -220,7 +226,6 @@ class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso 
 
         plt.show()
 
-
     def ejecutar(self):
         res_2d = self.optimizar_2d()
         res_3d = self.optimizar_3d()
@@ -229,7 +234,6 @@ class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso 
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
 
-
 """
 A partir de aqui se usaran metodos de optimización más avanzados, como algoritmos evolutivos
 o PSO, para intentar encontrar el mínimo global de estas funciones, 
@@ -237,7 +241,7 @@ ya que el método BFGS es un método de optimización local y puede quedarse atr
 especialmente en funciones tan complejas como Schwefel.
 """
 
-#Algoritmo para evolción diferencial
+#Algoritmo para evolución diferencial
 
 class Rosenbrock_de(Rosenbrock_sgd):#Clase para la función de Rosenbrock, usando algoritmo de evolución diferencial
     def __init__(self,bounds=None):
@@ -264,8 +268,18 @@ class Rosenbrock_de(Rosenbrock_sgd):#Clase para la función de Rosenbrock, usand
     
     def resultados(self, res_2d, res_3d):
         return super().resultados(res_2d, res_3d)
-    def graficar_evo(self):
-        return super().graficar_evo()
+    
+    def graficar_evo(self): 
+        plt.figure(figsize=(10, 5))
+        plt.plot(self.historia_2d, label='Rosenbrock 2D')
+        plt.plot(self.historia_3d, label='Rosenbrock 3D')
+        plt.yscale('log') # Escala logarítmica porque Rosenbrock baja de valores muy altos a casi 0
+        plt.xlabel('Iteraciones')
+        plt.ylabel('Valor de la función (log)')
+        plt.title('Evolución de la Optimización (Evolución Diferencial)')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
     def grafica_3d(self,res_3d):    
         return super().grafica_3d(res_3d)
     def grafica_2d(self,res_2d):
@@ -304,10 +318,22 @@ class Schwefel_de(Schwefel_sgd):#Clase para la función de Schwefel, usando algo
     
     def resultados(self, res_2d, res_3d):
         return super().resultados(res_2d, res_3d)
+    
     def graficar_evo(self):
-        return super().graficar_evo()
+        plt.figure(figsize=(10, 5))
+        plt.plot(self.historia_2d, label='schwefel 2D')
+        plt.plot(self.historia_3d, label='schwefel 3D')
+        plt.yscale('log') #Igualmente escala logaritmica
+        plt.xlabel('Iteraciones')
+        plt.ylabel('Valor de la función (log)')
+        plt.title('Evolución de la Optimización (Evolución Diferencial)')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
     def grafica_3d(self,res_3d):    
         return super().grafica_3d(res_3d)
+    
     def grafica_2d(self,res_2d):
         return super().grafica_2d(res_2d)
     
@@ -318,4 +344,172 @@ class Schwefel_de(Schwefel_sgd):#Clase para la función de Schwefel, usando algo
         self.graficar_evo()
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
+
+#Optimizacion por enjambre de partículas (PSO)
+#No voy a hacer eso a mano hermano, mejor uso la librería pyswarms que ya tiene implementado el algoritmo de PSO y es fácil de usar.
+
+class Rosenbrock_pso(Rosenbrock_sgd):
+    def __init__(self,bounds=None):
+        super().__init__()
+        self.bounds = bounds
+
+    def evaluate(self, x):
+        if x.ndim == 1:
+            return np.sum(self.b*(x[1:] - x[:-1]**2.0)**2.0 + (self.a - x[:-1])**2.0)
+        else:
+            return np.sum(self.b*(x[:, 1:] - x[:, :-1]**2.0)**2.0 + (self.a - x[:, :-1])**2.0, axis=1)
+
+    def monitor_progreso_2d(self,swarm):
+        self.historia_2d.append(np.min(swarm.cost))
+
+    def monitor_progreso_3d(self,swarm):
+        self.historia_3d.append(np.min(swarm.cost))
+
+    def optimizar_2d(self):
+        self.bounds = (np.array([-2, -2]), np.array([2, 2]))
+        options = {'c1': 0.5, 'c2': 0.9, 'w': 0.6} #Parámetros de PSO: c1 y c2 son los coeficientes de aprendizaje, w es el factor de inercia
+        optimizer = ps.single.GlobalBestPSO(n_particles=50, dimensions=2, options=options, bounds=self.bounds)
+        best_cost, best_pos = optimizer.optimize(self.evaluate, iters=1000, verbose=False)
+        return best_pos, best_cost ,optimizer.cost_history, optimizer.pos_history
+    
+    def optimizar_3d(self):
+        self.bounds = (np.array([-2, -2, -2]), np.array([2, 2, 2]))
+        options = {'c1': 0.5, 'c2': 0.9, 'w': 0.7}
+        optimizer = ps.single.GlobalBestPSO(n_particles=50, dimensions=3, options=options, bounds=self.bounds)
+        best_cost, best_pos = optimizer.optimize(self.evaluate, iters=3000, verbose=False)
+        return best_pos, best_cost , optimizer.cost_history, optimizer.pos_history
+    
+    def resultados(self, res_2d, res_3d):
+        print(f"--- RESULTADOS 2D ---")
+        print(f"X óptimo: {res_2d[0]}")
+        print(f"Valor de la función en el óptimo: {res_2d[1]}") 
+
+        print(f"\n--- RESULTADOS 3D ---")
+        print(f"X óptimo: {res_3d[0]}")
+        print(f"Valor de la función en el óptimo: {res_3d[1]}")
+
+    def graficar_evo(self,res_2d, res_3d):
+        plt.figure(figsize=(10, 5))
+        plt.plot(res_2d[2], label='Rosenbrock 2D PSO')
+        plt.plot(res_3d[2], label='Rosenbrock 3D PSO')
+        plt.yscale('log')
+        plt.xlabel('Iteraciones')
+        plt.ylabel('Costo (Valor de la función)')
+        plt.title('Evolución de la Optimización (PSO)')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+    def grafica_3d(self,res_3d):   
+            x = np.linspace(-2, 2, 250)
+            y = np.linspace(-1, 3, 250)
+            X, Y = np.meshgrid(x, y)
+            Z = (self.a - X)**2 + self.b * (Y - X**2)**2#Evaluamos la función en cada punto de la malla
+            
+            fig = plt.figure(figsize=(12, 8))
+            ax = fig.add_subplot(111, projection='3d')
+            #cmap es el mapa de colores, antialiased para suavizar la superficie, alpha para transparencia
+            surf = ax.plot_surface(X, Y, Z, cmap=cm.viridis, antialiased=False, alpha=0.8)
+
+
+            pos_final = np.array(res_3d[3][-1]) # Convertimos a array de numpy
+            z_particulas = (self.a - pos_final[:,0])**2 + self.b * (pos_final[:,1] - pos_final[:,0]**2)**2
+            
+            ax.scatter(pos_final[:,0], pos_final[:,1], z_particulas, color='green', s=20, label='Enjambre Final')
+            ax.scatter(1, 1, 0, color='red', s=100, label='Mínimo Global', marker='*')
+
+            fig.colorbar(surf, shrink=0.5, aspect=5) #Barra de colores para entender los valores de Z
+
+
+            ax.set_title('Convergencia Final del Enjambre (PSO)')
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.set_zlabel('Rosenbrock(X, Y)')
+            
+            plt.show()
+
+            #Comparar punto óptimo con la gráfica
+            try:#Grafica el punto óptimo encontrado en 3D, si es que se encuentra dentro del rango de la gráfica
+                ax.scatter(res_3d[0][0], res_3d[0][1], self.evaluate(res_3d[0]), color='red', s=100, label='Óptimo encontrado', marker='*')
+                ax.legend()
+            
+            except Exception as e:
+                print(f"No se pudo graficar el punto óptimo: {e}")
+        
+    def grafica_2d(self,res_2d):
+        
+        x = np.linspace(-2, 2, 100)
+        y = np.linspace(-1, 3, 100)
+        X, Y = np.meshgrid(x, y)
+        Z = (self.a - X)**2 + self.b * (Y - X**2)**2#Evaluamos la función en cada punto de la malla
+
+        plt.figure(figsize=(8, 6))
+        
+        cp = plt.contour(X, Y, Z, levels=np.logspace(-1, 3, 20), cmap='magma')
+        plt.colorbar(cp)
+        plt.title('Curvas de Nivel - Rosenbrock')
+        
+        plt.plot(1, 1, 'go', markersize=15, label='Mínimo Global (1,1)',zorder =4)#Optimo global conocido de la función de Rosenbrock
+        plt.plot(res_2d[0][0], res_2d[0][1], 'r*', markersize=15, label='Óptimo encontrado PSO', zorder=5)
+
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.legend()
+        plt.grid(alpha=0.3)
+        plt.show()
+
+    def animacion_2d(self,res_2d):#Funciopn para animar la evolución del PSO en 2D, usando la librería pyswarms y matplotlib
+        m = Mesher(func=self.evaluate,
+           limits=[(-2,2), (-2,2)]) #Crea una malla para graficar la función de Rosenbrock
+        historia = res_2d[3] #La historia de posiciones de las partículas durante la optimización, se obtiene del resultado de la optimización PSO
+        historia_reducida = historia[::10] #Reducimos la cantidad de puntos para la animación
+        
+        d = Designer(limits=[(-2,2), (-2,2), (-0.1,1)],
+                    label=['x-axis', 'y-axis', 'z-axis'],
+                    )
+         
+        faster_anim = Animator(interval=40,repeat = False) #Intervalo entre frames en milisegundos, ajusta según la velocidad deseada
+        
+        animation = plot_contour(pos_history=historia_reducida, mesher=m, designer=d, mark=(0,0),animator=faster_anim)
+        plt.show()
+
+    def animacion_3d(self, res_3d):
+        # 1. Preparar la malla
+        m = Mesher(func=self.evaluate, limits=[(-2, 2), (-2, 2)])
+        
+        # 2. Reducir la historia para que no sea pesada (cada 10 iteraciones)
+        historia_reducida = res_3d[3][::10]
+        
+        # 3. Formatear la historia para 3D (esto calcula Z para cada partícula)
+        pos_history_3d = m.compute_history_3d(historia_reducida)
+        
+        # 4. Diseñador con límites de Z adecuados para Rosenbrock
+        d = Designer(limits=[(-2, 2), (-2, 2), (0, 500)],
+                     label=['X', 'Y', 'Z'])
+        
+        faster_anim = Animator(interval=80, repeat=False)
+        
+        # IMPORTANTE: Retornar la animación
+        animation = plot_surface(pos_history=pos_history_3d, 
+                                 mesher=m, 
+                                 designer=d, 
+                                 animator=faster_anim)
+        return animation
+
+    def ejecutar(self):
+        res_2d = self.optimizar_2d()
+        res_3d = self.optimizar_3d()
+        self.resultados(res_2d, res_3d)
+        self.graficar_evo(res_2d, res_3d)
+        self.grafica_3d(res_3d)
+        self.grafica_2d(res_2d)
+        self.animacion_2d(res_2d)
+        #self.animacion_3d(res_3d) #esta aun no funciona
+
+"""
+rosen_de =Rosenbrock_pso()
+rosen_de.ejecutar()
+"""
+"""rosen  = Rosenbrock_de()
+rosen.ejecutar()"""
 
