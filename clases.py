@@ -8,7 +8,7 @@ import pyswarms as ps
 from pyswarms.utils.functions import single_obj as fx
 from pyswarms.utils.plotters import plot_cost_history, plot_contour, plot_surface
 from pyswarms.utils.plotters.formatters import Mesher, Designer, Animator
-
+from matplotlib.animation import FuncAnimation
 
 
 class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos descenso por gradiente
@@ -17,12 +17,14 @@ class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos desce
         self.b = b
         self.historia_2d = []
         self.historia_3d = []
+        self.trayectoria_2d = []
 
     def evaluate(self, x):#Función de Rosenbrock, se puede usar tanto para 2D como para 3D dependiendo del tamaño de x
             return np.sum(self.b*(x[1:] - x[:-1]**2.0)**2.0 + (self.a - x[:-1])**2.0)
 
     def callback_2d(self, xk):
         self.historia_2d.append(self.evaluate(xk))
+        self.trayectoria_2d.append(np.copy(xk)) # GUARDAMOS UNA COPIA DEL PUNTO [X, Y] EN CADA ITERACIÓN PARA LA ANIMACIÓN
     
     def callback_3d(self, xk):
         self.historia_3d.append(self.evaluate(xk))
@@ -31,7 +33,6 @@ class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos desce
     def optimizar_2d(self):
         res_2d = minimize(self.evaluate, x0=np.random.uniform(-2, 2, 2), method='BFGS', callback=self.callback_2d)
         return res_2d
-
     # Método para optimizar en 3D
     def optimizar_3d(self):
         res_3d = minimize(self.evaluate, x0=np.random.uniform(-2, 2, 3), method='BFGS', callback=self.callback_3d)
@@ -117,6 +118,112 @@ class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos desce
 
         plt.show()
 
+  
+    def animar_descenso_2d(self):
+        # Usamos la nueva lista con las coordenadas [X, Y]
+        puntos = np.array(self.trayectoria_2d) 
+        if len(puntos) == 0:
+            print("No hay trayectoria para animar.")
+            return
+
+        # Dibujar el bendito fondo
+        fig, ax = plt.subplots(figsize=(8, 6))
+        x = np.linspace(-2, 2, 100)
+        y = np.linspace(-1, 3, 100)
+        X, Y = np.meshgrid(x, y)
+        Z = (self.a - X)**2 + self.b * (Y - X**2)**2 # Rosenbrock
+        ax.contour(X, Y, Z, levels=np.logspace(-1, 3, 20), cmap='magma', alpha=0.5)       
+
+        # Lo que se va a animar
+        linea, = ax.plot([], [], 'r--', alpha=0.6) # Línea del rastro
+        punto, = ax.plot([], [], 'ro', markersize=8) # Punto actual
+        
+        # Marcar el óptimo global para referencia
+        ax.plot(1, 1, 'g*', markersize=15, label='Óptimo Global')
+
+        ax.set_title("Animación del Descenso de Gradiente (BFGS)")
+        ax.legend()
+
+        def init():
+            linea.set_data([], [])
+            punto.set_data([], [])
+            return linea, punto
+        
+        def update(i):
+            # Actualizamos la línea con todos los puntos hasta i (inclusive)
+            linea.set_data(puntos[:i+1, 0], puntos[:i+1, 1])
+            # El punto actual recibe una lista con la coordenada X y otra con la Y
+            punto.set_data([puntos[i, 0]], [puntos[i, 1]])
+            return linea, punto
+
+        # Crear la animación
+        anim = FuncAnimation(fig, update, frames=len(puntos), init_func=init, blit=True, interval=100, repeat=False)
+
+        return anim
+    def animar_descenso_3d(self):
+        
+        puntos = np.array(self.trayectoria_2d)#Usamos la misma trayectoria 2D pero la graficamos en 3D, con la altura Z dada por el valor de la función en cada punto (X, Y)
+        if len(puntos) == 0:
+            print("No hay trayectoria para animar.")
+            return
+
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        
+        # 1. Dibujar la superficie de fondo (Rosenbrock)
+        x = np.linspace(-2, 2, 100)
+        y = np.linspace(-1, 3, 100)
+        X, Y = np.meshgrid(x, y)
+        Z_surf = (self.a - X)**2 + self.b * (Y - X**2)**2
+        
+        # Usamos alpha=0.6 para que la superficie sea semitransparente y se vea el punto
+        ax.plot_surface(X, Y, Z_surf, cmap='viridis', alpha=0.6, edgecolor='none')
+
+        # 2. Elementos que se van a animar
+        # Nota: Inicializamos con listas vacías en 3D
+        linea, = ax.plot([], [], [], 'r-', linewidth=2, label='Trayectoria') 
+        punto, = ax.plot([], [], [], 'go', markersize=10, label='Posición Actual')
+        
+        # Marcar el óptimo global
+        ax.plot([1], [1], [0], 'b*', markersize=15, label='Óptimo Global')
+
+        ax.set_title("Animación 3D del Descenso (BFGS)")
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z (Costo)')
+        ax.legend()
+
+        def init():
+            linea.set_data([], [])
+            linea.set_3d_properties([])
+            punto.set_data([], [])
+            punto.set_3d_properties([])
+            return linea, punto
+        
+        def update(i):
+            # Extraemos las coordenadas X e Y hasta el paso i
+            x_data = puntos[:i+1, 0]
+            y_data = puntos[:i+1, 1]
+            
+            # Calculamos la altura Z para cada punto de la trayectoria
+            z_data = [self.evaluate(p) for p in puntos[:i+1]]
+
+            # Actualizamos X e Y
+            linea.set_data(x_data, y_data)
+            # Actualizamos Z (exclusivo de mplot3d)
+            linea.set_3d_properties(z_data)
+
+            # Actualizamos el punto actual (el último de la lista actual)
+            punto.set_data([puntos[i, 0]], [puntos[i, 1]])
+            punto.set_3d_properties([z_data[-1]])
+            
+            return linea, punto
+
+        # Crear la animación
+        anim_3d = FuncAnimation(fig, update, frames=len(puntos), init_func=init, blit=False, interval=100, repeat=False)
+
+        return anim_3d
+
     def ejecutar(self):
         res_2d = self.optimizar_2d()
         res_3d = self.optimizar_3d()
@@ -124,13 +231,29 @@ class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos desce
         self.graficar_evo()
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
-
+        self.animacion = self.animar_descenso_2d() 
+        """print("Guardando animación 2D como GIF... (esto puede tardar unos segundos)")
+        # fps=10 controla la velocidad, writer='pillow' es el motor que crea el gif
+        self.animacion.save('rosenbrock_descenso_2d.gif', writer='pillow', fps=12)
+        print("¡Animación guardada con éxito!")"""
+        plt.show()
+        """#Descomenten las lineas de arriba si quieren guardar la animación como un archivo GIF, 
+        pero tengan en cuenta que puede tardar un poco dependiendo de la cantidad de iteraciones y la velocidad de su computadora."""
+        self.animacion_3d = self.animar_descenso_3d()
+        """# Guardar en GIF
+        print("Guardando animación 3D... (toma un poco más de tiempo)")
+        self.animacion_3d.save('rosenbrock_descenso_3d.gif', writer='pillow', fps=10)
+        print("¡GIF 3D guardado!")"""
+        plt.show()
+        #Lo mismo de antes, descomentar si quieren guardar la animación 3D.
+    
 class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso por gradiente
     def __init__(self):
         pass
         self.historia_2d = []
         self.historia_3d = []
-    
+        self.trayectoria_2d = []
+
     def evaluate(self, x):
         # Si x es un vector (optimización), axis=1 (o sumatoria total) suma sus elementos.
         # Si x es una matriz (pyswarms), axis=1 suma las dimensiones por cada partícula.
@@ -141,6 +264,7 @@ class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso 
         
     def callback_3d(self,xk):
         self.historia_3d.append(self.evaluate(xk))
+        self.trayectoria_2d.append(np.copy(xk)) # GUARDAMOS UNA COPIA DEL PUNTO [X, Y] EN CADA ITERACIÓN PARA LA ANIMACIÓN
     
     def optimizar_2d(self):
         res_2d = minimize(self.evaluate, x0=np.random.uniform(-20, 20, 2), method='BFGS', callback=self.callback_2d)
@@ -228,6 +352,111 @@ class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso 
 
         plt.show()
 
+    def animar_descenso_2d(self):
+        # Usamos la nueva lista con las coordenadas [X, Y]
+        puntos = np.array(self.trayectoria_2d) 
+        if len(puntos) == 0:
+            print("No hay trayectoria para animar.")
+            return
+
+        # Dibujar el bendito fondo
+        fig, ax = plt.subplots(figsize=(8, 6))
+        x = x = np.linspace(-500, 500, 250)
+        y = x = np.linspace(-500, 500, 250)
+        X, Y = np.meshgrid(x, y)
+        Z = self.evaluate(np.array([X, Y])) # Schwefel
+        ax.contour(X, Y, Z, levels=np.logspace(-1, 3, 20), cmap='magma', alpha=0.5)       
+
+        # Lo que se va a animar
+        linea, = ax.plot([], [], 'r--', alpha=0.6) # Línea del rastro
+        punto, = ax.plot([], [], 'ro', markersize=8) # Punto actual
+            
+        # Marcar el óptimo global para referencia
+        ax.plot(420.9687, 420.9687, 'g*', markersize=15, label='Óptimo Global')
+
+        ax.set_title("Animación del Descenso de Gradiente (BFGS)")
+        ax.legend()
+
+        def init():
+            linea.set_data([], [])
+            punto.set_data([], [])
+            return linea, punto
+        
+        def update(i):
+            # Actualizamos la línea con todos los puntos hasta i (inclusive)
+            linea.set_data(puntos[:i+1, 0], puntos[:i+1, 1])
+            # El punto actual recibe una lista con la coordenada X y otra con la Y
+            punto.set_data([puntos[i, 0]], [puntos[i, 1]])
+            return linea, punto
+
+        # Crear la animación
+        anim = FuncAnimation(fig, update, frames=len(puntos), init_func=init, blit=True, interval=100, repeat=False)
+
+        return anim
+
+    def animar_descenso_3d(self):
+        puntos = np.array(self.trayectoria_2d)#Usamos la misma trayectoria 2D pero la graficamos en 3D, con la altura Z dada por el valor de la función en cada punto (X, Y)
+        if len(puntos) == 0:
+            print("No hay trayectoria para animar.")
+            return
+
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        
+        # 1. Dibujar la superficie de fondo (Rosenbrock)
+        x = np.linspace(-500, 500, 250)
+        y = np.linspace(-500, 500, 250)
+        X, Y = np.meshgrid(x, y)
+        Z_surf = self.evaluate(np.array([X, Y]))
+        
+        # Usamos alpha=0.6 para que la superficie sea semitransparente y se vea el punto
+        ax.plot_surface(X, Y, Z_surf, cmap='viridis', alpha=0.6, edgecolor='none')
+
+        # 2. Elementos que se van a animar
+        # Nota: Inicializamos con listas vacías en 3D
+        linea, = ax.plot([], [], [], 'r-', linewidth=2, label='Trayectoria') 
+        punto, = ax.plot([], [], [], 'ro', markersize=15, label='Posición Actual')
+        
+        # Marcar el óptimo global
+        ax.plot([420.9687], [420.9687], [420.9687], 'b*', markersize=15, label='Óptimo Global')
+
+        ax.set_title("Animación 3D del Descenso (BFGS)")
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z (Costo)')
+        ax.legend()
+
+        def init():
+            linea.set_data([], [])
+            linea.set_3d_properties([])
+            punto.set_data([], [])
+            punto.set_3d_properties([])
+            return linea, punto
+        
+        def update(i):
+            # Extraemos las coordenadas X e Y hasta el paso i
+            x_data = puntos[:i+1, 0]
+            y_data = puntos[:i+1, 1]
+            
+            # Calculamos la altura Z para cada punto de la trayectoria
+            z_data = [self.evaluate(p) for p in puntos[:i+1]]
+
+            # Actualizamos X e Y
+            linea.set_data(x_data, y_data)
+            # Actualizamos Z (exclusivo de mplot3d)
+            linea.set_3d_properties(z_data)
+
+            # Actualizamos el punto actual (el último de la lista actual)
+            punto.set_data([puntos[i, 0]], [puntos[i, 1]])
+            punto.set_3d_properties([z_data[-1]])
+            
+            return linea, punto
+
+        # Crear la animación
+        anim_3d = FuncAnimation(fig, update, frames=len(puntos), init_func=init, blit=False, interval=100, repeat=False)
+
+        return anim_3d
+     
     def ejecutar(self):
         res_2d = self.optimizar_2d()
         res_3d = self.optimizar_3d()
@@ -235,6 +464,19 @@ class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso 
         self.graficar_evo()
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
+        self.animacion = self.animar_descenso_2d()
+        print("Guardando animación 2D como GIF... (esto puede tardar unos segundos)")
+        """# fps=10 controla la velocidad, writer='pillow' es el motor que crea el gif
+        self.animacion.save('schwefel_descenso_2d_sgd.gif', writer='pillow', fps=12)
+        print("¡Animación guardada con éxito!")"""
+        plt.show()
+        self.animacion_3d = self.animar_descenso_3d()
+        """# Guardar en GIF
+        print("Guardando animación 3D... (toma un poco más de tiempo)")
+        self.animacion_3d.save('schwefel_descenso_3d_sgd.gif', writer='pillow', fps=12)
+        print("¡GIF 3D guardado!")"""
+        plt.show()
+        
 
 """
 A partir de aqui se usaran metodos de optimización más avanzados, como algoritmos evolutivos
@@ -251,16 +493,21 @@ class Rosenbrock_de(Rosenbrock_sgd):#Clase para la función de Rosenbrock, usand
         self.bounds = bounds
         self.historia_2d = []
         self.historia_3d = []
+        self.trayectoria_2d = []
+
 
     def monitor_progreso_2d(self,xk,convergencia):#Función de callback para evolución diferencial, se llama en cada iteración con el punto actual y la convergencia
         self.historia_2d.append(self.evaluate(xk))
+        self.trayectoria_2d.append(np.copy(xk))
 
     def monitor_progreso_3d(self,xk,convergencia):
         self.historia_3d.append(self.evaluate(xk))
+        # GUARDAMOS UNA COPIA DEL PUNTO [X, Y] EN CADA ITERACIÓN PARA LA ANIMACIÓN
 
     def optimizar_2d(self):
         self.bounds = [(-2, 2)]*2 #Rangos para la optimización en 2D
-        res_2d = differential_evolution(self.evaluate, bounds=self.bounds,callback=self.monitor_progreso_2d)#Optimimzacion 
+        res_2d = differential_evolution(self.evaluate, bounds=self.bounds,callback=self.monitor_progreso_2d)#Optimimzacion
+
         return res_2d
     
     def optimizar_3d(self):
@@ -286,6 +533,112 @@ class Rosenbrock_de(Rosenbrock_sgd):#Clase para la función de Rosenbrock, usand
         return super().grafica_3d(res_3d)
     def grafica_2d(self,res_2d):
         return super().grafica_2d(res_2d)
+
+    def animar_descenso_2d(self):
+        # Usamos la nueva lista con las coordenadas [X, Y]
+        puntos = np.array(self.trayectoria_2d) 
+        if len(puntos) == 0:
+            print("No hay trayectoria para animar.")
+            return
+
+        # Dibujar el bendito fondo
+        fig, ax = plt.subplots(figsize=(8, 6))
+        x = np.linspace(-2, 2, 100)
+        y = np.linspace(-1, 3, 100)
+        X, Y = np.meshgrid(x, y)
+        Z = (self.a - X)**2 + self.b * (Y - X**2)**2 # Rosenbrock
+        ax.contour(X, Y, Z, levels=np.logspace(-1, 3, 20), cmap='magma', alpha=0.5)       
+
+        # Lo que se va a animar
+        linea, = ax.plot([], [], 'r--', alpha=0.6) # Línea del rastro
+        punto, = ax.plot([], [], 'ro', markersize=8) # Punto actual
+        
+        # Marcar el óptimo global para referencia
+        ax.plot(1, 1, 'g*', markersize=15, label='Óptimo Global')
+
+        ax.set_title("Animación de la evolución diferencial")
+        ax.legend()
+
+        def init():
+            linea.set_data([], [])
+            punto.set_data([], [])
+            return linea, punto
+        
+        def update(i):
+            # Actualizamos la línea con todos los puntos hasta i (inclusive)
+            linea.set_data(puntos[:i+1, 0], puntos[:i+1, 1])
+            # El punto actual recibe una lista con la coordenada X y otra con la Y
+            punto.set_data([puntos[i, 0]], [puntos[i, 1]])
+            return linea, punto
+
+        # Crear la animación
+        anim = FuncAnimation(fig, update, frames=len(puntos), init_func=init, blit=True, interval=100, repeat=False)
+
+        return anim
+        
+        
+    def animar_descenso_3d(self):
+        puntos = np.array(self.trayectoria_2d)#Usamos la misma trayectoria 2D pero la graficamos en 3D, con la altura Z dada por el valor de la función en cada punto (X, Y)
+        if len(puntos) == 0:
+            print("No hay trayectoria para animar.")
+            return
+
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        
+        # 1. Dibujar la superficie de fondo (Rosenbrock)
+        x = np.linspace(-2, 2, 100)
+        y = np.linspace(-1, 3, 100)
+        X, Y = np.meshgrid(x, y)
+        Z_surf = (self.a - X)**2 + self.b * (Y - X**2)**2
+        
+        # Usamos alpha=0.6 para que la superficie sea semitransparente y se vea el punto
+        ax.plot_surface(X, Y, Z_surf, cmap='viridis', alpha=0.6, edgecolor='none')
+
+        # 2. Elementos que se van a animar
+        # Nota: Inicializamos con listas vacías en 3D
+        linea, = ax.plot([], [], [], 'r-', linewidth=2, label='Trayectoria') 
+        punto, = ax.plot([], [], [], 'go', markersize=10, label='Posición Actual')
+        
+        # Marcar el óptimo global
+        ax.plot([1], [1], [0], 'b*', markersize=15, label='Óptimo Global')
+
+        ax.set_title("Animación 3D de la evolución diferencial)")
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z (Costo)')
+        ax.legend()
+
+        def init():
+            linea.set_data([], [])
+            linea.set_3d_properties([])
+            punto.set_data([], [])
+            punto.set_3d_properties([])
+            return linea, punto
+        
+        def update(i):
+            # Extraemos las coordenadas X e Y hasta el paso i
+            x_data = puntos[:i+1, 0]
+            y_data = puntos[:i+1, 1]
+            
+            # Calculamos la altura Z para cada punto de la trayectoria
+            z_data = [self.evaluate(p) for p in puntos[:i+1]]
+
+            # Actualizamos X e Y
+            linea.set_data(x_data, y_data)
+            # Actualizamos Z (exclusivo de mplot3d)
+            linea.set_3d_properties(z_data)
+
+            # Actualizamos el punto actual (el último de la lista actual)
+            punto.set_data([puntos[i, 0]], [puntos[i, 1]])
+            punto.set_3d_properties([z_data[-1]])
+            
+            return linea, punto
+        
+        # Crear la animación
+        anim_3d = FuncAnimation(fig, update, frames=len(puntos), init_func=init, blit=False, interval=100, repeat=False)
+
+        return anim_3d
     
     def ejecutar(self):
         res_2d = self.optimizar_2d()
@@ -294,6 +647,20 @@ class Rosenbrock_de(Rosenbrock_sgd):#Clase para la función de Rosenbrock, usand
         self.graficar_evo()
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
+        self.animacion = self.animar_descenso_2d()
+       
+        print("Guardando animación 2D como GIF... (esto puede tardar unos segundos)")
+        """# fps=10 controla la velocidad, writer='pillow' es el motor que crea el gif
+        self.animacion.save('rosenbrock_evolucion_difrencial_2d.gif', writer='pillow', fps=12)
+        print("¡Animación guardada con éxito!")"""
+        plt.show()
+
+        self.animacion_3d = self.animar_descenso_3d()
+        # Guardar en GIF
+        """print("Guardando animación 3D... (toma un poco más de tiempo)")
+        self.animacion_3d.save('rosenbrock_evolucion_difrencial_3d.gif', writer='pillow', fps=12)
+        print("¡GIF 3D guardado!")"""
+        plt.show()
 
 class Schwefel_de(Schwefel_sgd):#Clase para la función de Schwefel, usando algoritmo de evolución diferencial
     def __init__(self,bounds=None):
@@ -301,12 +668,20 @@ class Schwefel_de(Schwefel_sgd):#Clase para la función de Schwefel, usando algo
         self.bounds = bounds
         self.historia_2d = []
         self.historia_3d = []
+        self.trayectoria_2d = []
+        self.trayectoria_3d = []
+        
+
+        
 
     def monitor_progreso_2d(self,xk,convergencia):
         self.historia_2d.append(self.evaluate(xk))
+        self.trayectoria_2d.append(np.copy(xk))
+        
 
     def monitor_progreso_3d(self,xk,convergencia):
         self.historia_3d.append(self.evaluate(xk))
+        self.trayectoria_3d.append(np.copy(xk))
 
     def optimizar_2d(self):
         self.bounds = [(-500, 500)]*2 #Rangos para la optimización en 2D
@@ -339,6 +714,112 @@ class Schwefel_de(Schwefel_sgd):#Clase para la función de Schwefel, usando algo
     def grafica_2d(self,res_2d):
         return super().grafica_2d(res_2d)
     
+    def animar_descenso_2d(self):
+        # Usamos la nueva lista con las coordenadas [X, Y]
+        puntos = np.array(self.trayectoria_2d) 
+        if len(puntos) == 0:
+            print("No hay trayectoria para animar.")
+            return
+
+        # Dibujar el bendito fondo
+        fig, ax = plt.subplots(figsize=(8, 6))
+        x = x = np.linspace(-500, 500, 250)
+        y = x = np.linspace(-500, 500, 250)
+        X, Y = np.meshgrid(x, y)
+        Z = self.evaluate(np.array([X, Y])) # Schwefel
+        ax.contour(X, Y, Z, levels=np.logspace(-1, 3, 20), cmap='magma', alpha=0.5)       
+
+        # Lo que se va a animar
+        linea, = ax.plot([], [], 'r--', alpha=0.6) # Línea del rastro
+        punto, = ax.plot([], [], 'ro', markersize=8) # Punto actual
+            
+        # Marcar el óptimo global para referencia
+        ax.plot(420.9687, 420.9687, 'g*', markersize=15, label='Óptimo Global')
+
+        ax.set_title("Animación de la evolución diferencial")
+        ax.legend()
+
+        def init():
+            linea.set_data([], [])
+            punto.set_data([], [])
+            return linea, punto
+        
+        def update(i):
+            # Actualizamos la línea con todos los puntos hasta i (inclusive)
+            linea.set_data(puntos[:i+1, 0], puntos[:i+1, 1])
+            # El punto actual recibe una lista con la coordenada X y otra con la Y
+            punto.set_data([puntos[i, 0]], [puntos[i, 1]])
+            return linea, punto
+
+        # Crear la animación
+        anim = FuncAnimation(fig, update, frames=len(puntos), init_func=init, blit=True, interval=100, repeat=False)
+
+        return anim
+
+    def animar_descenso_3d(self):
+        puntos = np.array(self.trayectoria_3d)#Usamos la misma trayectoria 2D pero la graficamos en 3D, con la altura Z dada por el valor de la función en cada punto (X, Y)
+        if len(puntos) == 0:
+            print("No hay trayectoria para animar.")
+            return
+
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        
+        # 1. Dibujar la superficie de fondo (Rosenbrock)
+        x = np.linspace(-500, 500, 250)
+        y = np.linspace(-500, 500, 250)
+        X, Y = np.meshgrid(x, y)
+        Z_surf = self.evaluate(np.array([X, Y]))
+        
+        # Usamos alpha=0.6 para que la superficie sea semitransparente y se vea el punto
+        ax.plot_surface(X, Y, Z_surf, cmap='viridis', alpha=0.6, edgecolor='none')
+
+        # 2. Elementos que se van a animar
+        # Nota: Inicializamos con listas vacías en 3D
+        linea, = ax.plot([], [], [], 'r-', linewidth=2, label='Trayectoria') 
+        punto, = ax.plot([], [], [], 'ro', markersize=15, label='Posición Actual')
+        
+        # Marcar el óptimo global
+        ax.plot([420.9687], [420.9687], [420.9687], 'b*', markersize=15, label='Óptimo Global')
+
+        ax.set_title("Animación 3D dela evolución diferencial")
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z (Costo)')
+        ax.legend()
+
+        def init():
+            linea.set_data([], [])
+            linea.set_3d_properties([])
+            punto.set_data([], [])
+            punto.set_3d_properties([])
+            return linea, punto
+        
+        def update(i):
+            # Extraemos las coordenadas X e Y hasta el paso i
+            x_data = puntos[:i+1, 0]
+            y_data = puntos[:i+1, 1]
+            
+            # Calculamos la altura Z para cada punto de la trayectoria
+            z_data = [self.evaluate(p) for p in puntos[:i+1]]
+
+            # Actualizamos X e Y
+            linea.set_data(x_data, y_data)
+            # Actualizamos Z (exclusivo de mplot3d)
+            linea.set_3d_properties(z_data)
+
+            # Actualizamos el punto actual (el último de la lista actual)
+            punto.set_data([puntos[i, 0]], [puntos[i, 1]])
+            punto.set_3d_properties([z_data[-1]])
+            
+            return linea, punto
+
+        # Crear la animación
+        anim_3d = FuncAnimation(fig, update, frames=len(puntos), init_func=init, blit=False, interval=100, repeat=False)
+
+        return anim_3d
+
+        
     def ejecutar(self):
         res_2d = self.optimizar_2d()
         res_3d = self.optimizar_3d()
@@ -346,6 +827,19 @@ class Schwefel_de(Schwefel_sgd):#Clase para la función de Schwefel, usando algo
         self.graficar_evo()
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
+        
+        self.animacion = self.animar_descenso_2d()
+        """print("Guardando animación 2D como GIF... (esto puede tardar unos segundos)")
+        # fps=10 controla la velocidad, writer='pillow' es el motor que crea el gif
+        self.animacion.save('schwefel_evolucion_diferencial_2d.gif', writer='pillow', fps=12)
+        print("¡Animación guardada con éxito!")"""
+        plt.show()
+        self.animacion_3d = self.animar_descenso_3d()
+        # Guardar en GIF
+        """print("Guardando animación 3D... (toma un poco más de tiempo)")
+        self.animacion_3d.save('schwefel_evolucion_diferencial_3d.gif', writer='pillow', fps=12)
+        print("¡GIF 3D guardado!")"""
+        plt.show()
 
 #Optimizacion por enjambre de partículas (PSO)
 #No voy a hacer eso a mano hermano, mejor uso la librería pyswarms que ya tiene implementado el algoritmo de PSO y es fácil de usar.
@@ -924,4 +1418,19 @@ class Schwefel_ea(Schwefel_sgd):
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
 
+"""
+rosenbrock_sgd = Rosenbrock_sgd()
+rosenbrock_sgd.ejecutar()"""
 
+"""schwefel = Schwefel_sgd()
+schwefel.ejecutar()
+"""
+
+"""rosenbrock_de = Rosenbrock_de()
+rosenbrock_de.ejecutar()
+"""
+schwefel_pso = Rosenbrock_pso()
+schwefel_pso.ejecutar()
+
+"""schwefel = Schwefel_de()
+schwefel.ejecutar()"""
