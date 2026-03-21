@@ -1417,20 +1417,3 @@ class Schwefel_ea(Schwefel_sgd):
         self.graficar_evo(res_2d, res_3d)
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
-
-"""
-rosenbrock_sgd = Rosenbrock_sgd()
-rosenbrock_sgd.ejecutar()"""
-
-"""schwefel = Schwefel_sgd()
-schwefel.ejecutar()
-"""
-
-"""rosenbrock_de = Rosenbrock_de()
-rosenbrock_de.ejecutar()
-"""
-schwefel_pso = Rosenbrock_pso()
-schwefel_pso.ejecutar()
-
-"""schwefel = Schwefel_de()
-schwefel.ejecutar()"""
