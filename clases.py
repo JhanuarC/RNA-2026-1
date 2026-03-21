@@ -1,12 +1,14 @@
 import numpy as np
+import pygad
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize
+from scipy.optimize import minimize, rosen
 from scipy.optimize import differential_evolution
 from matplotlib import cm
 import pyswarms as ps
 from pyswarms.utils.functions import single_obj as fx
 from pyswarms.utils.plotters import plot_cost_history, plot_contour, plot_surface
 from pyswarms.utils.plotters.formatters import Mesher, Designer, Animator
+
 
 
 class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos descenso por gradiente
@@ -359,12 +361,6 @@ class Rosenbrock_pso(Rosenbrock_sgd):
         else:
             return np.sum(self.b*(x[:, 1:] - x[:, :-1]**2.0)**2.0 + (self.a - x[:, :-1])**2.0, axis=1)
 
-    def monitor_progreso_2d(self,swarm):
-        self.historia_2d.append(np.min(swarm.cost))
-
-    def monitor_progreso_3d(self,swarm):
-        self.historia_3d.append(np.min(swarm.cost))
-
     def optimizar_2d(self):
         self.bounds = (np.array([-2, -2]), np.array([2, 2]))
         options = {'c1': 0.5, 'c2': 0.9, 'w': 0.6} #Parámetros de PSO: c1 y c2 son los coeficientes de aprendizaje, w es el factor de inercia
@@ -376,7 +372,7 @@ class Rosenbrock_pso(Rosenbrock_sgd):
         self.bounds = (np.array([-2, -2, -2]), np.array([2, 2, 2]))
         options = {'c1': 0.5, 'c2': 0.9, 'w': 0.7}
         optimizer = ps.single.GlobalBestPSO(n_particles=50, dimensions=3, options=options, bounds=self.bounds)
-        best_cost, best_pos = optimizer.optimize(self.evaluate, iters=3000, verbose=False)
+        best_cost, best_pos = optimizer.optimize(self.evaluate, iters=1500, verbose=False)
         return best_pos, best_cost , optimizer.cost_history, optimizer.pos_history
     
     def resultados(self, res_2d, res_3d):
@@ -416,7 +412,7 @@ class Rosenbrock_pso(Rosenbrock_sgd):
             z_particulas = (self.a - pos_final[:,0])**2 + self.b * (pos_final[:,1] - pos_final[:,0]**2)**2
             
             ax.scatter(pos_final[:,0], pos_final[:,1], z_particulas, color='green', s=20, label='Enjambre Final')
-            ax.scatter(1, 1, 0, color='red', s=100, label='Mínimo Global', marker='*')
+            ax.scatter(1, 1, 1, color='red', s=100, label='Mínimo Global', marker='*')
 
             fig.colorbar(surf, shrink=0.5, aspect=5) #Barra de colores para entender los valores de Z
 
@@ -468,9 +464,9 @@ class Rosenbrock_pso(Rosenbrock_sgd):
                     label=['x-axis', 'y-axis', 'z-axis'],
                     )
          
-        faster_anim = Animator(interval=40,repeat = False) #Intervalo entre frames en milisegundos, ajusta según la velocidad deseada
+        faster_anim = Animator(interval=80,repeat = False) #Intervalo entre frames en milisegundos, ajusta según la velocidad deseada
         
-        animation = plot_contour(pos_history=historia_reducida, mesher=m, designer=d, mark=(0,0),animator=faster_anim)
+        animation = plot_contour(pos_history=historia, mesher=m, designer=d, mark=(0,0),animator=faster_anim)
         plt.show()
 
     def animacion_3d(self, res_3d):
@@ -506,10 +502,426 @@ class Rosenbrock_pso(Rosenbrock_sgd):
         self.animacion_2d(res_2d)
         #self.animacion_3d(res_3d) #esta aun no funciona
 
-"""
-rosen_de =Rosenbrock_pso()
-rosen_de.ejecutar()
-"""
-"""rosen  = Rosenbrock_de()
-rosen.ejecutar()"""
+class Schwefel_pso(Schwefel_sgd):
+    def __init__(self,bounds = None):
+        super().__init__()
+        self.bounds = bounds    
+
+    def evaluate(self, x):#redefinimos la función de evaluación para que funcione con PSO, ya que PSO puede pasarle una matriz de partículas, entonces hay que evaluar cada partícula por separado
+        """
+        Función de evaluación robusta para Schwefel.
+        Maneja:
+        - (D,)      : Una sola partícula (vector)
+        - (N, D)    : Enjambre de N partículas (PSO y Mesher)
+        - (2, M, N) : Rejilla de meshgrid (grafica_2d/3d)
+        """
+        if x.ndim == 1:
+                # Caso (D,)
+            return 418.9829 * len(x) - np.sum(x * np.sin(np.sqrt(np.abs(x))), axis=0)
+            
+        if x.ndim == 3 and x.shape[0] == 2:
+                # Caso (2, M, N) - Meshgrid manual
+            return 418.9829 * 2 - np.sum(x * np.sin(np.sqrt(np.abs(x))), axis=0)
+                
+            # Caso (N, D) - Estándar para PSO y Mesher
+        return 418.9829 * x.shape[1] - np.sum(x * np.sin(np.sqrt(np.abs(x))), axis=1)
+    
+    def optimizar_2d(self):
+        self.bounds = (np.array([-500, -500]), np.array([500, 500]))
+        options = {'c1': 0.5, 'c2': 0.93, 'w': 0.56}
+        optimizer = ps.single.GlobalBestPSO(n_particles=50, dimensions=2, options=options, bounds=self.bounds)
+        best_cost, best_pos = optimizer.optimize(self.evaluate, iters=1000, verbose=False)
+        return best_pos, best_cost ,optimizer.cost_history, optimizer.pos_history
+
+    def optimizar_3d(self):
+        self.bounds = (np.array([-500, -500,-500]), np.array([500, 500, 500]))
+        options = {'c1': 0.5, 'c2': 0.9, 'w': 0.7}
+        optimizer = ps.single.GlobalBestPSO(n_particles=50, dimensions=3, options=options, bounds=self.bounds)
+        best_cost, best_pos = optimizer.optimize(self.evaluate, iters=1500, verbose=False)
+        return best_pos, best_cost , optimizer.cost_history, optimizer.pos_history
+    
+    def resultados(self, res_2d, res_3d):
+        print(f"--- RESULTADOS 2D ---")
+        print(f"X óptimo: {res_2d[0]}")
+        print(f"Valor de la función en el óptimo: {res_2d[1]}") 
+
+        print(f"\n--- RESULTADOS 3D ---")
+        print(f"X óptimo: {res_3d[0]}")
+        print(f"Valor de la función en el óptimo: {res_3d[1]}")
+    
+    def graficar_evo(self,res_2d, res_3d):
+        plt.figure(figsize=(10, 5))
+        plt.plot(res_2d[2], label='Schwefel 2D PSO')
+        plt.plot(res_3d[2], label='Schwefel 3D PSO')
+        plt.yscale('log')
+        plt.xlabel('Iteraciones')
+        plt.ylabel('Costo (Valor de la función)')
+        plt.title('Evolución de la Optimización (PSO)')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+    
+    def grafica_2d(self,res_2d):
+        
+        x = np.linspace(-500, 500, 250)
+        y = np.linspace(-500, 500, 250)
+        X, Y = np.meshgrid(x, y)
+
+        f = lambda x: 418.9829 * len(x) - np.sum(x * np.sin(np.sqrt(np.abs(x))),axis=0)#Se maneja como una función lambda para evaluar la 
+        #función de Schwefel en cada punto de la malla, ya que Z = f(X,Y) no funciona directamente porque f espera un vector y no una matriz, 
+        # entonces se le pasa np.array([X,Y]) para que lo evalúe correctamente. Esto es un poco hack pero funciona.
+        Z = f(np.array([X, Y])) #Evaluamos la función en cada punto de la malla
+
+        plt.figure(figsize=(8, 6))
+        
+        cp = plt.contour(X, Y, Z, levels=np.logspace(1, 5, 20), cmap='magma')
+        plt.colorbar(cp)
+        plt.title('Curvas de Nivel - Schwefel')
+        
+        plt.plot(420.9687, 420.9687, 'go', markersize=15, label='Mínimo Global (420.9687,420.9687)',zorder =4)#Optimo global conocido de la función de Schwefel
+        plt.plot(res_2d[0][0], res_2d[0][1], 'r*', markersize=15, label='Óptimo encontrado PSO', zorder=5)
+
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.legend()
+        plt.grid(alpha=0.3)
+        plt.show()
+
+
+    def grafica_3d(self, res_3d):
+        x = np.linspace(-500,500, 250)
+        y = np.linspace(-500,500, 250)
+        X, Y = np.meshgrid(x, y)
+        Z = self.evaluate(np.array([X, Y]))#Evaluamos la función en cada punto de la malla
+            
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        #cmap es el mapa de colores, antialiased para suavizar la superficie, alpha para transparencia
+        surf = ax.plot_surface(X, Y, Z, cmap=cm.plasma, antialiased=False, alpha=0.8)
+
+
+        pos_final = np.array(res_3d[3][-1]) # Convertimos a array de numpy
+        z_particulas = self.evaluate(pos_final)
+            
+        ax.scatter(pos_final[:,0], pos_final[:,1], z_particulas, color='red', s=70, label='Enjambre Final')
+        ax.scatter(420.9687, 420.9687, 420.9687, color='red', s=200, label='Mínimo Global', marker='*')
+
+        fig.colorbar(surf, shrink=0.5, aspect=5) #Barra de colores para entender los valores de Z
+
+
+        ax.set_title('Convergencia Final del Enjambre (PSO)')
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Rosenbrock(X, Y)')
+            
+        plt.show()
+
+        #Comparar punto óptimo con la gráfica
+        try:#Grafica el punto óptimo encontrado en 3D, si es que se encuentra dentro del rango de la gráfica
+            ax.scatter(res_3d[0][0], res_3d[0][1], self.evaluate(res_3d[0]), color='red', s=100, label='Óptimo encontrado', marker='*')
+            ax.legend()
+            
+        except Exception as e:
+            print(f"No se pudo graficar el punto óptimo: {e}")
+
+    def animacion_2d(self,res_2d):
+        m = Mesher(func=self.evaluate,
+           limits=[(-500,500), (-500,500)],delta=2.0) #Crea una malla para graficar la función de Schwefel
+        
+        #La historia de posiciones de las partículas durante la optimización, se obtiene del resultado de la optimización PSO
+        historia_reducida =res_2d[3][::10] #Reducimos la cantidad de puntos para la animación
+        
+        d = Designer(limits=[(-500,500), (-500,500), (0, 1700)],
+                    label=['x-axis', 'y-axis', 'z-axis'],
+                    )
+         
+        faster_anim = Animator(interval=80,repeat = False) #Intervalo entre frames en milisegundos, ajusta según la velocidad deseada
+        
+        animation = plot_contour(pos_history=historia_reducida, 
+                                designer=d, mesher=m, 
+                                mark=(420.9687,420.9687),animator=faster_anim,
+                               )
+        plt.show()
+
+    def ejecutar(self):
+        res_2d = self.optimizar_2d()
+        res_3d = self.optimizar_3d()
+        self.resultados(res_2d, res_3d)
+        self.graficar_evo(res_2d, res_3d)
+        self.grafica_3d(res_3d)
+        self.grafica_2d(res_2d)
+        self.animacion_2d(res_2d)
+
+#Optimizacion por Algoritmos Evolutivos
+class Rosenbrock_ea(Rosenbrock_sgd):
+    def __init__(self):
+        super().__init__()
+    
+    def optimizar_2d(self):
+        
+        def fitness_func(ga_instance,solution,solution_idx):
+            func = self.evaluate(solution)#Solution es el array que genera PyGAD
+            
+            #Debido a que Pygad maximiza y nosotros queremos mnimizar, tenemos que usar el inverso de la función como fitness
+            fitness = 1.0 / (func + 1e-6) #Agregamos un pequeño valor para evitar división por cero
+            return fitness
+        
+        #Configuracion de dimensionalidad
+        num_dimensiones = 2
+        
+        ga_instance = pygad.GA(
+        num_generations=1000,
+        num_parents_mating=30,
+        fitness_func=fitness_func,
+        sol_per_pop=100,
+        num_genes=num_dimensiones, # Aquí defines si es 2, 3 o N dimensiones
+        init_range_low=-2.0,
+        init_range_high=2.0,
+        mutation_percent_genes=20,
+        mutation_num_genes=1
+                                )
+        ga_instance.run()
+        solution, solution_fitness, _ = ga_instance.best_solution()
+        #Solution es el array con la mejor solución encontrada
+        #Solution_fitness es el valor de fitness de esa solución, pero como fitness es el inverso de la función, para obtener el valor real de la función en esa solución, tenemos que hacer 1/fitness
+        return solution, self.evaluate(solution) , ga_instance.best_solutions_fitness
+    
+    def optimizar_3d(self):
+        def fitness_func(ga_instance,solution,solution_idx):
+            func = self.evaluate(solution)
+            fitness = 1.0 / (func + 1e-6)
+            return fitness
+        
+        num_dimensiones = 3
+        
+        ga_instance = pygad.GA(
+        num_generations=2500,
+        num_parents_mating=50,
+        fitness_func=fitness_func,
+        sol_per_pop=250,
+        num_genes=num_dimensiones,
+        init_range_low=-2.0,
+        init_range_high=2.0,
+        mutation_percent_genes=15,
+        mutation_num_genes=1
+                            )
+        ga_instance.run()
+        solution, solution_fitness, _ = ga_instance.best_solution()
+        return solution, self.evaluate(solution) , ga_instance.best_solutions_fitness
+
+    def resultados(self, res_2d, res_3d):
+        print(f"--- RESULTADOS 2D ---")
+        print(f"X óptimo: {res_2d[0]}")
+        print(f"Valor de la función en el óptimo: {res_2d[1]}")#En Rosenbrock, esto debe ser un valor cercano a 0, ya que el mínimo global es 0 en (1,1) para 2D y (1,1,1) para 3D
+
+        print(f"\n--- RESULTADOS 3D ---")
+        print(f"X óptimo: {res_3d[0]}")
+        print(f"Valor de la función en el óptimo: {res_3d[1]}")
+        
+        """#En este caso no es evaluaciones reales, sino el valor de la función en el óptimo encontrado,
+        Porque Pygad no nos da el número de evaluaciones, 
+        pero si nos da el valor de la función en la mejor solución encontrada, que es lo que realmente nos interesa."""
+
+    def graficar_evo(self,res_2d,res_3d):
+        #Pygad tiene su propia función para graficar la evolución del fitness, pero vamos a hacer una gráfica personalizada para comparar 2D y 3D
+        plt.figure(figsize=(10, 5))
+        plt.plot(res_2d[2], label='Rosenbrock 2D EA')
+        plt.plot(res_3d[2], label='Rosenbrock 3D EA')
+        plt.yscale('log')
+        plt.xlabel('')
+        plt.ylabel('Fitness (1/Valor de la función)')
+        plt.title('Evolución de la Optimización (Algoritmo Evolutivo)')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+    def grafica_2d(self,res_2d):
+        x = np.linspace(-2, 2, 250)
+        y = np.linspace(-1, 3, 250)
+        X, Y = np.meshgrid(x, y)
+        Z = (self.a - X)**2 + self.b * (Y - X**2)**2#Evaluamos la función en cada punto de la malla
+
+        plt.figure(figsize=(8, 6))
+        
+        cp = plt.contour(X, Y, Z, levels=np.logspace(-1, 3, 20), cmap='magma')
+        plt.colorbar(cp)
+        plt.title('Curvas de Nivel - Rosenbrock')
+        
+        plt.plot(1, 1, 'go', markersize=15, label='Mínimo Global (1,1)',zorder =4)#Optimo global conocido de la función de Rosenbrock
+        plt.plot(res_2d[0][0], res_2d[0][1], 'r*', markersize=15, label='Óptimo encontrado EA', zorder=5)
+
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.legend()
+        plt.grid(alpha=0.3)
+        plt.show()
+
+    def grafica_3d(self,res_3d):
+            x = np.linspace(-2, 2, 250)
+            y = np.linspace(-1, 3, 250)
+            X, Y = np.meshgrid(x, y)
+            Z = (self.a - X)**2 + self.b * (Y - X**2)**2#Evaluamos la función en cada punto de la malla
+            
+            fig = plt.figure(figsize=(12, 8))
+            ax = fig.add_subplot(111, projection='3d')
+            #cmap es el mapa de colores, antialiased para suavizar la superficie, alpha para transparencia
+            surf = ax.plot_surface(X, Y, Z, cmap=cm.viridis, antialiased=False, alpha=0.8)
+
+            fig.colorbar(surf, shrink=0.5, aspect=5) #Barra de colores para entender los valores de Z
+
+
+            ax.set_title('Función de Rosenbrock en 3D')
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.set_zlabel('Rosenbrock(X, Y)')
+            plt.show()
+
+            #Comparar punto óptimo con la gráfica
+
+            try:#Grafica el punto óptimo encontrado en 3D, si es que se encuentra dentro del rango de la gráfica
+                ax.scatter(res_3d[0][0], res_3d[0][1], self.evaluate(res_3d[0]), color='red', s=100, label='Óptimo encontrado', marker='*')
+                ax.legend()
+            
+            except Exception as e:
+                print(f"No se pudo graficar el punto óptimo: {e}")
+    
+    def ejecutar(self):
+        res_2d = self.optimizar_2d()
+        res_3d = self.optimizar_3d()
+        self.resultados(res_2d, res_3d)
+        self.graficar_evo(res_2d, res_3d)
+        self.grafica_3d(res_3d)
+        self.grafica_2d(res_2d)
+   
+class Schwefel_ea(Schwefel_sgd):
+    def __init__(self):
+        super().__init__()
+    
+    def optimizar_2d(self):
+        #Función de fitness para Schwefel, similar a la de Rosenbrock pero adaptada a la función de Schwefel
+        def fitness_func(ga_instance,solution,solution_idx):
+            func = self.evaluate(solution)
+            fitness = 1.0 / (func + 1e-6)
+            return fitness
+        
+        num_dimensiones = 2
+        
+        ga_instance = pygad.GA(
+        num_generations=1000,
+        num_parents_mating=30,
+        fitness_func=fitness_func,
+        sol_per_pop=100,
+        num_genes=num_dimensiones,
+        init_range_low=-500.0,
+        init_range_high=500.0,
+        mutation_percent_genes=20,
+        mutation_num_genes=1
+                                )
+        ga_instance.run()
+        solution, solution_fitness, _ = ga_instance.best_solution()
+        return solution, self.evaluate(solution) , ga_instance.best_solutions_fitness
+    
+    def optimizar_3d(self):
+        def fitness_func(ga_instance,solution,solution_idx):
+            func = self.evaluate(solution)
+            fitness = 1.0 / (func + 1e-6)
+            return fitness
+        
+        num_dimensiones = 3
+        
+        ga_instance = pygad.GA(
+        num_generations=2500,
+        num_parents_mating=50,
+        fitness_func=fitness_func,
+        sol_per_pop=250,
+        num_genes=num_dimensiones,
+        init_range_low=-500.0,
+        init_range_high=500.0,
+        mutation_percent_genes=15,
+        mutation_num_genes=1
+                            )
+        ga_instance.run()
+        solution, solution_fitness, _ = ga_instance.best_solution()
+        return solution, self.evaluate(solution) , ga_instance.best_solutions_fitness
+
+    def resultados(self, res_2d, res_3d):
+        print(f"--- RESULTADOS 2D ---")
+        print(f"X óptimo: {res_2d[0]}")
+        print(f"Valor de la función en el óptimo: {res_2d[1]}") 
+
+        print(f"\n--- RESULTADOS 3D ---")
+        print(f"X óptimo: {res_3d[0]}")
+        print(f"Valor de la función en el óptimo: {res_3d[1]}")
+
+    def graficar_evo(self,res_2d, res_3d):
+        plt.figure(figsize=(10, 5))
+        plt.plot(res_2d[2], label='Schwefel 2D EA')
+        plt.plot(res_3d[2], label='Schwefel 3D EA')
+        plt.yscale('log')
+        plt.xlabel('')
+        plt.ylabel('Fitness (1/Valor de la función)')
+        plt.title('Evolución de la Optimización (Algoritmo Evolutivo)')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+    def grafica_2d(self,res_2d):
+        x = np.linspace(-500, 500, 250)
+        y = np.linspace(-500, 500, 250)
+        X, Y = np.meshgrid(x, y)
+
+        f = lambda x: 418.9829 * len(x) - np.sum(x * np.sin(np.sqrt(np.abs(x))),axis=0)
+        Z = f(np.array([X, Y]))
+
+        plt.figure(figsize=(8, 6))
+        
+        cp = plt.contour(X, Y, Z, levels=np.logspace(1, 5, 20), cmap='magma')
+        plt.colorbar(cp)
+        plt.title('Curvas de Nivel - Schwefel')
+        
+        plt.plot(420.9687, 420.9687, 'go', markersize=15, label='Mínimo Global (420.9687,420.9687)',zorder =4)#Optimo global conocido de la función de Schwefel
+        plt.plot(res_2d[0][0], res_2d[0][1], 'r*', markersize=15, label='Óptimo encontrado EA', zorder=5)
+
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.legend()
+        plt.grid(alpha=0.3)
+        plt.show()
+
+    def grafica_3d(self, res_3d):
+        x = np.linspace(-500,500, 250)
+        y = np.linspace(-500,500, 250)
+        X, Y = np.meshgrid(x, y)
+        Z = self.evaluate(np.array([X, Y]))#Evaluamos la función en cada punto de la malla
+            
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        #cmap es el mapa de colores, antialiased para suavizar la superficie, alpha para transparencia
+        surf = ax.plot_surface(X, Y, Z, cmap=cm.plasma, antialiased=False, alpha=0.8)
+
+        fig.colorbar(surf, shrink=0.5, aspect=5) #Barra de colores para entender los valores de Z
+
+
+        ax.set_title('Función de Schwefel en 3D')
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Schwefel(X, Y)')
+        plt.show()
+
+        #Comparar punto óptimo con la gráfica
+        try:#Grafica el punto óptimo encontrado en 3D, si es que se encuentra dentro del rango de la gráfica
+            ax.scatter(res_3d[0][0], res_3d[0][1], self.evaluate(res_3d[0]), color='red', s=100, label='Óptimo encontrado', marker='*')
+            ax.legend()
+            
+        except Exception as e:
+            print(f"No se pudo graficar el punto óptimo: {e}")
+    
+    def ejecutar(self):
+        res_2d = self.optimizar_2d()
+        res_3d = self.optimizar_3d()
+        self.resultados(res_2d, res_3d)
+        self.graficar_evo(res_2d, res_3d)
+        self.grafica_3d(res_3d)
+        self.grafica_2d(res_2d)
+
 
