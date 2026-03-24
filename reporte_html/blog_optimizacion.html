@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Optimización Numérica y Combinatoria — Blog Técnico</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-light: #4a4a4a;
+    --ink-muted: #8a8a8a;
+    --paper: #f8f5f0;
+    --paper-alt: #f0ece5;
+    --rule: #d0c8bc;
+    --accent: #8b1a1a;
+    --accent-soft: #b5392a;
+    --accent-pale: #f5ebe8;
+    --code-bg: #242424;
+    --code-text: #d4c9a8;
+    --math-bg: #f3f0eb;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 17px; scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 300;
+    line-height: 1.8;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 5rem 2rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+  .journal-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-soft);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .journal-label::before {
+    content: '';
+    display: inline-block;
+    width: 2rem;
+    height: 1px;
+    background: var(--accent-soft);
+  }
+  h1.post-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 1.15;
+    color: var(--paper);
+    margin-bottom: 1.2rem;
+    letter-spacing: -0.01em;
+  }
+  .post-subtitle {
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 1.15rem;
+    color: #c0b8af;
+    margin-bottom: 2.5rem;
+    max-width: 640px;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: #888;
+    letter-spacing: 0.05em;
+  }
+  .meta-item strong { color: #bbb; }
+  .header-deco {
+    position: absolute;
+    top: 0; right: -80px;
+    width: 420px; height: 100%;
+    background: radial-gradient(ellipse at 70% 40%, rgba(139,26,26,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ── NAV / TOC ── */
+  nav.toc {
+    background: var(--paper-alt);
+    border-top: 3px solid var(--accent);
+    border-bottom: 1px solid var(--rule);
+  }
+  .toc-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  .toc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 1rem;
+  }
+  .toc-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0.3rem 2rem;
+  }
+  .toc-list a {
+    color: var(--ink-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    transition: color 0.15s;
+  }
+  .toc-list a:hover { color: var(--accent); }
+  .toc-list .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    min-width: 1.4rem;
+  }
+
+  /* ── MAIN CONTENT ── */
+  main { max-width: 900px; margin: 0 auto; padding: 0 2rem 5rem; }
+
+  /* Part divider */
+  .part-divider {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 4rem 0 0;
+    padding-top: 3rem;
+    border-top: 1px solid var(--rule);
+  }
+  .part-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: white;
+    padding: 0.3em 0.8em;
+    white-space: nowrap;
+  }
+  .part-line { flex: 1; height: 1px; background: var(--rule); }
+
+  /* Section headings */
+  .section-block { margin: 3rem 0 0; }
+  h2.section-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.75rem;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+    scroll-margin-top: 2rem;
+  }
+  .section-rule {
+    width: 3rem;
+    height: 2px;
+    background: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+  h3.subsection-title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.2rem;
+    color: var(--ink-light);
+    margin: 2rem 0 0.8rem;
+  }
+  h4.inner-title {
+    font-family: 'Source Serif 4', serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ink);
+    margin: 1.5rem 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.85rem;
+  }
+
+  /* Body text */
+  p { margin-bottom: 1.2rem; }
+  p + p { text-indent: 1.5rem; }
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+
+  /* Math blocks */
+  .math-block {
+    background: var(--math-bg);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+
+  /* Code */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    background: #ede9e3;
+    padding: 0.1em 0.35em;
+    border-radius: 2px;
+    color: var(--accent);
+  }
+
+  /* Lists */
+  ul, ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1.2rem;
+  }
+  li { margin-bottom: 0.4rem; }
+  li + li { }
+
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 2rem 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    font-family: 'Source Serif 4', serif;
+  }
+  thead tr {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  thead th {
+    padding: 0.65rem 0.9rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  tbody tr:nth-child(even) { background: var(--paper-alt); }
+  tbody tr:hover { background: var(--accent-pale); }
+  tbody td {
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+  .table-caption {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    font-style: italic;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  /* Figure placeholders */
+  .figure-block {
+    margin: 2.5rem 0;
+    background: var(--paper-alt);
+    border: 1px solid var(--rule);
+  }
+  .figure-placeholder {
+    width: 100%;
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: var(--ink-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+  }
+  .figure-placeholder svg { opacity: 0.35; }
+  .figure-caption {
+    padding: 0.75rem 1.2rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--ink-light);
+    font-family: 'Source Serif 4', serif;
+  }
+  .figure-caption strong {
+    font-style: normal;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    margin-right: 0.4rem;
+  }
+
+  /* Callout / highlight box */
+  .callout {
+    background: var(--accent-pale);
+    border-left: 4px solid var(--accent);
+    padding: 1.2rem 1.5rem;
+    margin: 2rem 0;
+  }
+  .callout-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  /* Parameter table (inline) */
+  .param-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.3rem 1.5rem;
+    font-size: 0.88rem;
+    margin: 1rem 0 1.5rem;
+  }
+  .param-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .param-val { color: var(--ink-light); }
+
+  /* Conclusion box */
+  .conclusion-box {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2rem 2.5rem;
+    margin: 2.5rem 0;
+  }
+  .conclusion-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #e0d8cc;
+  }
+  .conclusion-box li { color: #c8c0b4; }
+  .conclusion-box strong { color: #e8dfd0; }
+
+  /* Prompts section */
+  .prompt-block {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1.2rem 1.5rem;
+    margin: 1.2rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+  }
+  .prompt-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  /* Bibliography */
+  .bibliography ol { counter-reset: item; padding: 0; }
+  .bibliography li {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 0.9rem;
+    font-size: 0.88rem;
+    color: var(--ink-light);
+  }
+  .bibliography .ref-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    min-width: 1.5rem;
+    padding-top: 0.15rem;
+  }
+  .bibliography a { color: var(--accent-soft); }
+
+  /* Contributions */
+  .contrib-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .contrib-card {
+    background: var(--paper-alt);
+    border: 1px solid var(--rule);
+    padding: 1.2rem;
+  }
+  .contrib-name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+  .contrib-card ul {
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    padding-left: 1rem;
+  }
+
+  /* Footer */
+  footer {
+    background: var(--ink);
+    color: #888;
+    text-align: center;
+    padding: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
+  footer a { color: #aaa; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    h1.post-title { font-size: 1.9rem; }
+    .header-inner { padding: 3rem 1.2rem 2.5rem; }
+    main { padding: 0 1.2rem 3rem; }
+    .toc-inner { padding: 1.5rem 1.2rem; }
+  }
+
+  /* Smooth reveal */
+  .section-block { opacity: 0; transform: translateY(18px); animation: reveal 0.5s ease forwards; }
+  @keyframes reveal { to { opacity: 1; transform: none; } }
+  .section-block:nth-child(1)  { animation-delay: 0.05s; }
+  .section-block:nth-child(2)  { animation-delay: 0.10s; }
+  .section-block:nth-child(3)  { animation-delay: 0.15s; }
+  .section-block:nth-child(4)  { animation-delay: 0.20s; }
+  .section-block:nth-child(5)  { animation-delay: 0.25s; }
+  .section-block:nth-child(6)  { animation-delay: 0.30s; }
+  .section-block:nth-child(7)  { animation-delay: 0.35s; }
+  .section-block:nth-child(8)  { animation-delay: 0.40s; }
+  .section-block:nth-child(9)  { animation-delay: 0.45s; }
+  .section-block:nth-child(10) { animation-delay: 0.50s; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════ -->
+<header>
+  <div class="header-deco"></div>
+  <div class="header-inner">
+    <div class="journal-label">RNA y Algoritmos Bioinspirados — Semestre 2026-1</div>
+    <h1 class="post-title">Optimización Numérica y Combinatoria</h1>
+    <p class="post-subtitle">Comparación de métodos de optimización numérica y heurística aplicados a funciones de prueba y al problema del vendedor viajero en México.</p>
+    <div class="meta-row">
+      <span><strong>Autores:</strong> J. F. Moreno Ruiz · D. F. Garzón Acosta · J. Castro López</span>
+      <span><strong>Curso:</strong> RNA y Algoritmos Bioinspirados</span>
+      <span><strong>Profesor:</strong> Juan David Ospina Arango</span>
+      <span><strong>Fecha:</strong> 24/03/2026</span>
+      <span><strong>Universidad Nacional de Colombia</strong> — Facultad de Minas</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     TABLE OF CONTENTS
+══════════════════════════════════════════ -->
+<nav class="toc">
+  <div class="toc-inner">
+    <div class="toc-title">Contenido</div>
+    <ul class="toc-list">
+      <li><a href="#s1"><span class="num">1.</span> Selección de funciones de prueba</a></li>
+      <li><a href="#s2"><span class="num">2.</span> Optimización por descenso de gradiente</a></li>
+      <li><a href="#s3"><span class="num">3.</span> Optimización por métodos heurísticos</a></li>
+      <li><a href="#s4"><span class="num">4.</span> Resultados numéricos</a></li>
+      <li><a href="#s5"><span class="num">5.</span> Discusión comparativa</a></li>
+      <li><a href="#s6"><span class="num">6.</span> Costo del vendedor y vehículo</a></li>
+      <li><a href="#s7"><span class="num">7.</span> Colonias de hormigas (ACO)</a></li>
+      <li><a href="#s8"><span class="num">8.</span> Algoritmo genético (GA) — TSP</a></li>
+      <li><a href="#s9"><span class="num">9.</span> Prompts utilizados</a></li>
+      <li><a href="#s10"><span class="num">10.</span> Contribuciones y bibliografía</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     MAIN
+══════════════════════════════════════════ -->
+<main>
+
+  <!-- ─ PARTE 1 ─────────────────────────────── -->
+  <div class="part-divider">
+    <span class="part-tag">Parte 1</span>
+    <span class="part-line"></span>
+    <span class="part-tag" style="background:transparent;color:var(--ink-muted);border:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;">Optimización Numérica</span>
+  </div>
+
+  <!-- § 1 Funciones de prueba -->
+  <div class="section-block" id="s1">
+    <h2 class="section-title">1. Selección de funciones de prueba</h2>
+    <div class="section-rule"></div>
+
+    <p>Para el presente trabajo se seleccionaron dos funciones de prueba ampliamente utilizadas en la literatura de optimización: la <strong>función de Rosenbrock</strong> y la <strong>función de Schwefel</strong>. Esta elección responde a que representan dos escenarios complementarios: una función unimodal con geometría compleja y una función altamente multimodal, lo que permite evaluar el comportamiento de distintos algoritmos ante retos de naturaleza diferente.</p>
+
+    <h3 class="subsection-title">Función de Rosenbrock</h3>
+    <p>La función de Rosenbrock es un problema clásico de optimización no convexa, unimodal, cuyo mínimo global se ubica en el interior de un valle angosto y curvado. Si bien localizar dicho valle no resulta difícil, la convergencia al mínimo es considerablemente más compleja. Su definición general es:</p>
+
+    <div class="math-block">
+      f(x) = Σ<sub>i=1</sub><sup>n-1</sup> [ 100·(x<sub>i+1</sub> − x<sub>i</sub>²)² + (1 − x<sub>i</sub>)² ]<br>
+      donde  x = [x₁, …, xₙ]
+    </div>
+
+    <p>El mínimo global se alcanza en <code>x* = (1, 1, …, 1)</code> con <code>f(x*) = 0</code>. Para <em>N</em> = 3, el punto óptimo es <code>(1, 1, 1)</code>.</p>
+
+    <h3 class="subsection-title">Función de Schwefel</h3>
+    <p>La función de Schwefel es altamente multimodal y presenta numerosos mínimos locales distribuidos en el espacio de búsqueda, lo que la convierte en un problema particularmente exigente para cualquier algoritmo de optimización. Su formulación es:</p>
+
+    <div class="math-block">
+      f(x) = 418.9829·n − Σ<sub>i=1</sub><sup>n</sup> x<sub>i</sub>·sin(√|x<sub>i</sub>|)
+    </div>
+
+    <p>El mínimo global se encuentra en <code>x* = (420.9687, 420.9687, …)</code> con <code>f(x*) = 0</code>. El dominio habitual de evaluación es <code>x<sub>i</sub> ∈ [−500, 500]</code>.</p>
+  </div>
+
+  <!-- § 2 Descenso por gradiente -->
+  <div class="section-block" id="s2">
+    <h2 class="section-title">2. Optimización mediante descenso por gradiente</h2>
+    <div class="section-rule"></div>
+
+    <p>Para la optimización basada en gradiente se utilizó el método <strong>BFGS</strong> (<em>Broyden–Fletcher–Goldfarb–Shanno</em>), un algoritmo cuasi-newtoniano implementado a través de la función <code>scipy.optimize.minimize</code>. Este método aproxima la inversa de la matriz hessiana sin calcularla explícitamente, lo que lo hace eficiente para problemas de dimensionalidad moderada.</p>
+
+    <h4 class="inner-title">Configuración experimental</h4>
+    <div class="param-grid">
+      <span class="param-key">Método</span><span class="param-val">BFGS (scipy.optimize.minimize)</span>
+      <span class="param-key">Condición inicial</span><span class="param-val">Aleatoria en cada ejecución</span>
+      <span class="param-key">Dimensiones</span><span class="param-val">2D y 3D</span>
+      <span class="param-key">Rango Rosenbrock</span><span class="param-val">[−2, 2]</span>
+      <span class="param-key">Rango Schwefel</span><span class="param-val">[−500, 500]</span>
+    </div>
+
+    <h4 class="inner-title">Implementación</h4>
+    <p>Se desarrollaron clases especializadas para cada función: <code>Rosenbrock_sgd</code> y <code>Schwefel_sgd</code>. Cada clase incluye la evaluación de la función objetivo, la optimización en 2D y 3D, el registro de la trayectoria mediante funciones <em>callback</em>, y la visualización del proceso de convergencia. Las animaciones generadas en formato GIF permiten observar cómo el algoritmo recorre el espacio de búsqueda.</p>
+
+    <!-- Placeholder figura 1 -->
+    <div class="figure-block">
+      <div class="figure-placeholder">
+         <img src="rosenbrock_descenso_2d.gif" alt="Animación descenso por gradiente Rosenbrock 2D" width="400" />
+      </div>
+      <div class="figure-caption"><strong>Figura 1.</strong> Animación del proceso de descenso por gradiente (BFGS) sobre la función de Rosenbrock en 2D. Se observa la trayectoria a lo largo del valle estrecho hasta la convergencia al mínimo global.</div>
+    </div>
+
+    <div class="figure-block">
+      <div class="figure-placeholder">
+        <img src="schwefel_descenso_2d_sgd.gif" alt="Animación descenso por gradiente Schwefel 2D" width="400" />
+      </div>
+      <div class="figure-caption"><strong>Figura 2.</strong> Animación del proceso de descenso por gradiente (BFGS) sobre la función de Schwefel en 2D. Nótese la convergencia a un mínimo local dada la alta multimodalidad de la función.</div>
+    </div>
+  </div>
+
+  <!-- § 3 Heurísticos -->
+  <div class="section-block" id="s3">
+    <h2 class="section-title">3. Optimización mediante métodos heurísticos</h2>
+    <div class="section-rule"></div>
+
+    <p>Dadas las limitaciones del descenso por gradiente en funciones con múltiples mínimos locales, se implementaron tres enfoques heurísticos: <strong>Evolución Diferencial (DE)</strong>, <strong>Optimización por Enjambre de Partículas (PSO)</strong> y <strong>Algoritmos Genéticos (GA)</strong>. Estos métodos no requieren información sobre las derivadas de la función y son capaces de explorar el espacio de búsqueda de manera global.</p>
+
+    <h3 class="subsection-title">Evolución Diferencial (DE)</h3>
+    <p>Se utilizó la función <code>scipy.optimize.differential_evolution</code>. Este método poblacional genera nuevos candidatos combinando la diferencia entre individuos aleatorios de la población actual, sin requerir el cálculo del gradiente. Las clases implementadas fueron <code>Rosenbrock_de</code> y <code>Schwefel_de</code>, con límites de búsqueda definidos por el dominio de cada función.</p>
+
+    <h3 class="subsection-title">Optimización por Enjambre de Partículas (PSO)</h3>
+    <p>Se empleó la librería <code>pyswarms</code>. En este enfoque, cada partícula ajusta su posición en función de su mejor experiencia individual y la mejor posición colectiva del enjambre. Los parámetros principales son:</p>
+    <div class="param-grid">
+      <span class="param-key">c₁</span><span class="param-val">Componente cognitiva (atracción hacia el mejor personal)</span>
+      <span class="param-key">c₂</span><span class="param-val">Componente social (atracción hacia el mejor global)</span>
+      <span class="param-key">w</span><span class="param-val">Factor de inercia (control de exploración/explotación)</span>
+    </div>
+    <p>Las clases implementadas fueron <code>Rosenbrock_pso</code> y <code>Schwefel_pso</code>.</p>
+
+    <h3 class="subsection-title">Algoritmos Evolutivos (GA)</h3>
+    <p>Se utilizó la librería <code>pygad</code>. Dado que <code>pygad</code> maximiza por defecto, la función de aptitud se definió como:</p>
+
+    <div class="math-block">fitness(x) = 1 / (f(x) + ε)</div>
+
+    <p>donde <em>ε</em> es una constante pequeña para evitar divisiones por cero. Las clases implementadas fueron <code>Rosenbrock_ea</code> y <code>Schwefel_ea</code>. Los operadores utilizados incluyen selección por torneo, cruce y mutación aleatoria.</p>
+
+    <!-- Placeholder figura 3 -->
+    <!-- Figura 3 -->
+    <div class="figure-block">
+      <div class="figure-images" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        
+        <div style="text-align: center;">
+          <img src="Evolucion de optimizacion_rosenbrock_DG.png" alt="DG Rosenbrock" style="width: 250px; border-radius: 8px;">
+          <p>Descenso por gradiente</p>
+        </div>
+
+        <div style="text-align: center;">
+          <img src="Evolucion de optimizacion_rosenbrock_EP.png" alt="PSO Rosenbrock" style="width: 250px; border-radius: 8px;">
+          <p>Enjambre de partículas</p>
+        </div>
+
+        <div style="text-align: center;">
+          <img src="Evolucion de optimizacion_rosenbrock_GA.png" alt="GA Rosenbrock" style="width: 250px; border-radius: 8px;">
+          <p>Algoritmo Genético</p>
+        </div>
+
+      </div>
+
+      <div class="figure-caption">
+        <strong>Figura 3.</strong> Comparación visual del proceso de optimización en la función de Rosenbrock (2D) usando DE, PSO y GA. Se observan diferencias en la velocidad de convergencia y exploración del espacio de búsqueda.
+      </div>
+    </div>
+
+    <!-- Placeholder figura 4 -->
+    <!-- Figura 4 -->
+    <div class="figure-block">
+      <div class="figure-images" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        
+        <div style="text-align: center;">
+          <img src="Evolucion de optimizacion_schwefel_DG.png" alt="DG Schwefel" style="width: 250px; border-radius: 8px;">
+          <p>Descenso por gradiente</p>
+        </div>
+
+        <div style="text-align: center;">
+          <img src="evolucion de optimizacion_schwefel_EP.png" alt="PSO Schwefel" style="width: 250px; border-radius: 8px;">
+          <p>Enjambre Particulas</p>
+        </div>
+
+        <div style="text-align: center;">
+          <img src="Evolucion de optimizacion_schwefel_GA.png" alt="GA Schwefel" style="width: 250px; border-radius: 8px;">
+          <p>Algoritmo Genético</p>
+        </div>
+
+      </div>
+
+      <div class="figure-caption">
+        <strong>Figura 4.</strong> Comparación visual del proceso de optimización en la función de Schwefel (2D) usando DE, PSO y GA. Se observan diferencias en la velocidad de convergencia y exploración del espacio de búsqueda.
+      </div>
+    </div>
+  
+
+  <!-- § 4 Resultados tabla -->
+  <div class="section-block" id="s4">
+    <h2 class="section-title">4. Resultados de optimización numérica</h2>
+    <div class="section-rule"></div>
+
+    <p>La Tabla 1 resume los resultados obtenidos al optimizar las dos funciones de prueba en 2D y 3D con cada uno de los cuatro métodos evaluados. Se reportan los valores teóricos, los valores alcanzados y el número de evaluaciones requeridas.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Función</th>
+            <th>Dim</th>
+            <th>Método</th>
+            <th>X Teórico</th>
+            <th>X Alcanzado</th>
+            <th>f(x) Teórico</th>
+            <th>f(x) Alcanzado</th>
+            <th>Evaluaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Rosenbrock</td><td>2D</td><td>SGD (BFGS)</td><td>[1.00, 1.00]</td><td>[1.00, 1.00]</td><td>0.0</td><td>2.55 × 10⁻¹¹</td><td>102</td></tr>
+          <tr><td>Rosenbrock</td><td>3D</td><td>SGD (BFGS)</td><td>[1.00, 1.00, 1.00]</td><td>[1.00, 1.00, 1.00]</td><td>0.0</td><td>3.37 × 10⁻¹¹</td><td>288</td></tr>
+          <tr><td>Rosenbrock</td><td>2D</td><td>Evol. Dif.</td><td>[1.00, 1.00]</td><td>[1.00, 1.00]</td><td>0.0</td><td>0.00</td><td>3 753</td></tr>
+          <tr><td>Rosenbrock</td><td>3D</td><td>Evol. Dif.</td><td>[1.00, 1.00, 1.00]</td><td>[1.00, 1.00, 1.00]</td><td>0.0</td><td>0.00</td><td>10 894</td></tr>
+          <tr><td>Rosenbrock</td><td>2D</td><td>PSO</td><td>[1.00, 1.00]</td><td>[1.00, 1.00]</td><td>0.0</td><td>0.00</td><td>50 000</td></tr>
+          <tr><td>Rosenbrock</td><td>3D</td><td>PSO</td><td>[1.00, 1.00, 1.00]</td><td>[1.00, 1.01, 1.01]</td><td>0.0</td><td>4.90 × 10⁻⁵</td><td>75 000</td></tr>
+          <tr><td>Rosenbrock</td><td>2D</td><td>Alg. Gen.</td><td>[1.00, 1.00]</td><td>[1.01, 1.03]</td><td>0.0</td><td>6.30 × 10⁻⁴</td><td>100 000</td></tr>
+          <tr><td>Rosenbrock</td><td>3D</td><td>Alg. Gen.</td><td>[1.00, 1.00, 1.00]</td><td>[0.78, 0.61, 0.37]</td><td>0.0</td><td>2.02 × 10⁻¹</td><td>625 000</td></tr>
+          <tr><td>Schwefel</td><td>2D</td><td>SGD (BFGS)</td><td>[420.97, 420.97]</td><td>[−25.88, 5.24]</td><td>0.0</td><td>8.10 × 10²</td><td>30</td></tr>
+          <tr><td>Schwefel</td><td>3D</td><td>SGD (BFGS)</td><td>[420.97, …]</td><td>[5.24, −25.88, …]</td><td>0.0</td><td>1.20 × 10³</td><td>60</td></tr>
+          <tr><td>Schwefel</td><td>2D</td><td>Evol. Dif.</td><td>[420.97, 420.97]</td><td>[420.97, 420.97]</td><td>0.0</td><td>2.55 × 10⁻⁵</td><td>1 086</td></tr>
+          <tr><td>Schwefel</td><td>3D</td><td>Evol. Dif.</td><td>[420.97, …]</td><td>[420.97, 420.97, 420.97]</td><td>0.0</td><td>3.82 × 10⁻⁵</td><td>2 585</td></tr>
+          <tr><td>Schwefel</td><td>2D</td><td>PSO</td><td>[420.97, 420.97]</td><td>[420.97, 420.97]</td><td>0.0</td><td>2.55 × 10⁻⁵</td><td>50 000</td></tr>
+          <tr><td>Schwefel</td><td>3D</td><td>PSO</td><td>[420.97, …]</td><td>[420.97, 420.96, 420.97]</td><td>0.0</td><td>4.35 × 10⁻⁵</td><td>75 000</td></tr>
+          <tr><td>Schwefel</td><td>2D</td><td>Alg. Gen.</td><td>[420.97, 420.97]</td><td>[420.97, 420.97]</td><td>0.0</td><td>2.55 × 10⁻⁵</td><td>100 000</td></tr>
+          <tr><td>Schwefel</td><td>3D</td><td>Alg. Gen.</td><td>[420.97, …]</td><td>[420.97, 420.97, 420.97]</td><td>0.0</td><td>3.82 × 10⁻⁵</td><td>625 000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption"><strong>Tabla 1.</strong> Resultados finales de optimización para las funciones Rosenbrock y Schwefel en 2D y 3D con cuatro métodos distintos. Se reportan la posición teórica del mínimo global, la posición alcanzada, el valor de la función objetivo y el número de evaluaciones.</p>
+  </div>
+
+  <!-- § 5 Discusión -->
+  <div class="section-block" id="s5">
+    <h2 class="section-title">5. Discusión comparativa</h2>
+    <div class="section-rule"></div>
+
+    <h3 class="subsection-title">Métodos de descenso por gradiente</h3>
+    <p>El método BFGS demostró ser altamente eficiente en problemas unimodales y suaves. Para la función de Rosenbrock, el valor alcanzado de la función objetivo es prácticamente idéntico al valor teórico (en el orden de 10⁻¹¹), con únicamente 102 evaluaciones en 2D y 288 en 3D. Esta eficiencia se explica por la capacidad del método de aprovechar la información del gradiente para dirigir la búsqueda de forma efectiva.</p>
+    <p>Sin embargo, ante la función de Schwefel —altamente multimodal—, el método falla de manera sistemática en alcanzar el mínimo global: converge a mínimos locales con valores de 809.94 (2D) y 1204.8 (3D), utilizando apenas 30 y 60 evaluaciones respectivamente. Esta convergencia prematura ilustra la principal limitación de los métodos basados en gradiente cuando el paisaje de la función presenta múltiples atractores.</p>
+
+    <h3 class="subsection-title">Métodos heurísticos</h3>
+    <p>Los tres métodos heurísticos evaluados —DE, PSO y GA— comparten la capacidad de exploración global del espacio de búsqueda, lo cual los hace robustos frente a funciones multimodales. En la función de Schwefel, los tres logran aproximarse al mínimo global en 2D y 3D, con valores de función objetivo en el rango de 10⁻⁵, un resultado inaccesible para el BFGS.</p>
+    <p>Para la función de Rosenbrock, también alcanzan el mínimo global, aunque con un costo computacional considerablemente mayor: desde 3 753 evaluaciones para la Evolución Diferencial hasta más de 600 000 para el Algoritmo Genético en 3D. La DE resultó ser el método heurístico más eficiente en términos de número de evaluaciones, mientras que el GA, aunque el más costoso, mantiene una mayor diversidad en la exploración.</p>
+
+    <div class="conclusion-box">
+      <h3>Síntesis comparativa</h3>
+      <ul>
+        <li><strong>BFGS (gradiente):</strong> alta eficiencia y precisión en funciones suaves y unimodales; falla en presencia de múltiples mínimos locales.</li>
+        <li><strong>Evolución Diferencial:</strong> mejor balance entre eficiencia y robustez global entre los métodos heurísticos evaluados.</li>
+        <li><strong>PSO:</strong> convergencia estable y competitiva, con mayor número de evaluaciones pero resultados consistentes.</li>
+        <li><strong>Algoritmos Genéticos:</strong> mayor costo computacional; adecuado cuando la diversidad de exploración es prioritaria frente a la eficiencia.</li>
+        <li>La elección del método debe considerar la naturaleza de la función objetivo (unimodal vs. multimodal) y el balance entre rapidez y capacidad de exploración global.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ─ PARTE 2 ─────────────────────────────── -->
+  <div class="part-divider">
+    <span class="part-tag">Parte 2</span>
+    <span class="part-line"></span>
+    <span class="part-tag" style="background:transparent;color:var(--ink-muted);border:1px solid var(--rule);font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;">Optimización Combinatoria</span>
+  </div>
+
+  <!-- § 6 Costo vendedor -->
+  <div class="section-block" id="s6">
+    <h2 class="section-title">6. Costo del vendedor y vehículo</h2>
+    <div class="section-rule"></div>
+
+    <h3 class="subsection-title">Perfil del vendedor y costo por hora</h3>
+    <p>El vendedor modelado es un ejecutivo de ventas bancarias especializado en la promoción de tarjetas de crédito. Este perfil percibe normalmente entre 25 000 y 50 000 MXN al mes, considerando sueldo base y comisiones variables. Para el modelo se adoptó un salario de <strong>30 000 MXN/mes</strong>, valor que supera el salario promedio de un trabajador formal en México (entre 15 000 y 20 000 MXN, según datos del IMSS de 2025) y refleja la experiencia requerida por el puesto.</p>
+
+    <p>Tomando una jornada de 8 horas diarias y 20 días laborables al mes, el vendedor acumula 160 horas mensuales de trabajo. El costo por hora resulta:</p>
+
+    <div class="math-block">
+      Costo/hora = 30 000 MXN ÷ 160 h = 187.5 MXN/h
+    </div>
+
+    <p>Cada hora invertida en desplazamiento representa tiempo no dedicado a ventas, por lo que se incorpora como costo económico real dentro de la función objetivo del TSP. Este parámetro también permite analizar la sensibilidad de la ruta óptima ante variaciones en el valor del tiempo del vendedor.</p>
+
+    <h3 class="subsection-title">Vehículo seleccionado</h3>
+    <p>Se eligió el <strong>Nissan Versa 2026 versión Sense MT</strong> como vehículo de trabajo, por ser el modelo más vendido en México y contar con características de accesibilidad y economía adecuadas al perfil del vendedor. Su consumo promedio de combustible es de <strong>18.8 km/l</strong> (Nissan México, 2026).</p>
+
+    <h3 class="subsection-title">Función de costo entre ciudades</h3>
+    <p>La matriz de costos de desplazamiento se construyó mediante web scraping automatizado del sistema <em>Traza tu Ruta</em> de CAPUFE. Para cada par de ciudades (192 pares posibles entre las 32 capitales) se obtuvo:</p>
+
+    <div class="math-block">
+      C<sub>ij</sub> = (t<sub>ij</sub> · c<sub>h</sub>) + c<sub>combustible</sub> + c<sub>casetas</sub>
+    </div>
+
+    <p>donde <em>t<sub>ij</sub></em> es el tiempo de viaje en horas, <em>c<sub>h</sub></em> = 187.5 MXN/h es el costo por hora del vendedor, y los costos de combustible y casetas se extrajeron directamente de la calculadora de rutas.</p>
+  </div>
+
+  <!-- § 7 ACO -->
+  <div class="section-block" id="s7">
+    <h2 class="section-title">7. Colonias de hormigas (ACO)</h2>
+    <div class="section-rule"></div>
+
+    <p>Para la resolución del Problema del Viajero (TSP) con las 32 capitales de México se implementó el algoritmo de <strong>Optimización por Colonias de Hormigas</strong> (<em>Ant Colony Optimization</em>, ACO), una metaheurística bioinspirada en el comportamiento colectivo de las hormigas al explorar caminos entre su colonia y fuentes de alimento.</p>
+
+    <h3 class="subsection-title">Construcción de soluciones</h3>
+    <p>En cada iteración, un conjunto de hormigas construye rutas completas partiendo de una ciudad inicial aleatoria. La probabilidad de elegir la siguiente ciudad está determinada por:</p>
+
+    <div class="math-block">
+      P<sub>ij</sub> ∝ (τ<sub>ij</sub>)<sup>α</sup> · (η<sub>ij</sub>)<sup>β</sup>
+    </div>
+
+    <p>donde <em>τ<sub>ij</sub></em> es la cantidad de feromona en la arista <em>(i, j)</em>, <em>η<sub>ij</sub></em> = 1/<em>C<sub>ij</sub></em> es la información heurística, y los parámetros <em>α</em> y <em>β</em> controlan la influencia relativa de cada componente. El parámetro <code>choose_best</code> introduce una probabilidad de selección directa de la mejor opción disponible, equilibrando exploración y explotación.</p>
+
+    <h3 class="subsection-title">Actualización de feromonas</h3>
+    <p>Al finalizar cada iteración, las feromonas se actualizan mediante dos mecanismos: <strong>evaporación</strong> (reducción global para evitar convergencia prematura) e <strong>intensificación</strong> (incremento sobre las aristas de la mejor ruta encontrada en esa iteración). Este ciclo refuerza progresivamente las rutas de menor costo.</p>
+
+    <h4 class="inner-title">Parámetros utilizados</h4>
+    <div class="param-grid">
+      <span class="param-key">Hormigas</span><span class="param-val">200</span>
+      <span class="param-key">Iteraciones</span><span class="param-val">500</span>
+      <span class="param-key">Evaporación</span><span class="param-val">0.3</span>
+      <span class="param-key">Intensificación</span><span class="param-val">3</span>
+      <span class="param-key">α</span><span class="param-val">1</span>
+      <span class="param-key">β</span><span class="param-val">3</span>
+      <span class="param-key">choose_best</span><span class="param-val">0.2</span>
+    </div>
+
+    <!-- Placeholder figura ACO -->
+    <div class="figure-block">
+      <div class="figure-placeholder">
+        <img src="ruta_aco_optima.gif" alt="GIF de la ruta óptima ACO sobre el mapa de México" width="400">
+      </div>
+      <div class="figure-caption"><strong>Figura 4.</strong> Animación del recorrido óptimo encontrado por ACO entre las 32 capitales de México. El GIF muestra la construcción progresiva de la ruta, la posición actual (punto rojo), el cierre del ciclo y el costo total al finalizar.</div>
+    </div>
+  </div>
+
+  <!-- § 8 GA TSP -->
+  <div class="section-block" id="s8">
+    <h2 class="section-title">8. Algoritmo Genético para el TSP</h2>
+    <div class="section-rule"></div>
+
+    <p>Además del ACO, se implementó un <strong>Algoritmo Genético (GA)</strong> para resolver el mismo problema de ruteo. El GA representa las soluciones como permutaciones de los índices de las 32 capitales y evoluciona la población mediante selección, cruce y mutación.</p>
+
+    <h3 class="subsection-title">Estructura del algoritmo</h3>
+    <p>El flujo general del GA comprende los siguientes pasos: (1) inicialización de una población de rutas aleatorias; (2) evaluación del costo total de cada ruta; (3) selección mediante torneo; (4) cruce con los métodos <em>Order Crossover</em> (OX) y <em>Partially Mapped Crossover</em> (PMX); (5) mutación por inversión, intercambio o mezcla aleatoria de un segmento; y (6) creación de la siguiente generación con elitismo.</p>
+
+    <h4 class="inner-title">Parámetros utilizados</h4>
+    <div class="param-grid">
+      <span class="param-key">population_size</span><span class="param-val">300</span>
+      <span class="param-key">elite_size</span><span class="param-val">30 (~10 % de la población)</span>
+      <span class="param-key">mutation_rate</span><span class="param-val">0.05</span>
+      <span class="param-key">tournament_size</span><span class="param-val">5</span>
+      <span class="param-key">crossover_method</span><span class="param-val">Order Crossover (OX)</span>
+      <span class="param-key">mutation_method</span><span class="param-val">Inversión de segmento</span>
+    </div>
+
+    <h3 class="subsection-title">Resultado obtenido</h3>
+
+    <div class="callout">
+      <div class="callout-label">Mejor solución — GA</div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);margin:0;"><strong>Costo total: $54,440.77 MXN</strong></p>
+    </div>
+
+    <!-- Placeholder figura GA estática -->
+    <div class="figure-block">
+      <div class="figure-placeholder">
+        <img src="ruta_ga_estatica.png" alt="Mapa estático de la mejor ruta GA" width="400">
+      </div>
+      <div class="figure-caption"><strong>Figura 5.</strong> Mejor ruta encontrada por el Algoritmo Genético para las 32 capitales de México. Costo total: $54,440.77 MXN.</div>
+    </div>
+
+    <!-- Placeholder figura GA animada -->
+    <div class="figure-block">
+      <div class="figure-placeholder">
+        <img src="ruta_ga_animada.gif" alt="Animación de la evolución generacional del GA en la construcción de la ruta óptima" width="400">
+      </div>
+      <div class="figure-caption"><strong>Figura 6.</strong> GIF que ilustra la evolución generacional del Algoritmo Genético en la construcción de la ruta óptima sobre las 32 capitales.</div>
+    </div>
+
+    <h3 class="subsection-title">Conclusiones del TSP</h3>
+    <p>Ambos métodos —ACO y GA— lograron obtener soluciones de calidad comparable. El GA, gracias al elitismo, garantiza que las mejores rutas encontradas no se pierdan entre generaciones. La mutación por inversión demostró ser especialmente efectiva para mantener diversidad sin deteriorar demasiado las soluciones existentes. El ACO, por su parte, refuerza de manera natural las rutas más cortas a través del mecanismo de feromonas, lo que lo hace robusto ante la alta dimensionalidad del espacio de permutaciones.</p>
+  </div>
+
+  <!-- § 9 Prompts -->
+  <div class="section-block" id="s9">
+    <h2 class="section-title">9. Prompts principales utilizados</h2>
+    <div class="section-rule"></div>
+
+    <p>A continuación se transcriben los prompts más relevantes utilizados durante el desarrollo del trabajo. Su uso fue determinante para agilizar tanto la implementación técnica como la generación de visualizaciones.</p>
+
+    <div class="prompt-label">Prompt 1 — Web scraping de la calculadora de rutas CAPUFE</div>
+    <div class="prompt-block">Web scraping automatizado de calculadora de rutas para construcción de matrices de costo TSP — 32 capitales de México.
+
+Necesito hacer web scraping de un sitio web con formulario dinámico para extraer datos de rutas entre las 32 capitales de México y construir matrices de costo para resolver el Problema del Viajero. El sitio es https://tarifascapufe.com.mx/traza-tu-ruta/, una calculadora de rutas que dado un origen, destino y tipo de vehículo devuelve distancia, tiempo, costo de casetas y costo de combustible. Es un sitio WordPress con formulario de autocomplete jQuery UI.
+
+Por cada par de ciudades se extrae el tiempo de viaje en horas, el costo de casetas en MXN y el costo de combustible en MXN. El script utiliza Playwright en Python, consulta los 992 pares posibles entre 32 ciudades considerando AB y BA, es reanudable, guarda el progreso, reintenta automáticamente pares fallidos, bloquea recursos pesados y muestra ETA en tiempo real. El resultado son 3 matrices CSV de 32×32 con tiempo, casetas y combustible, usando un vehículo con consumo de 18.8 km/l.</div>
+
+    <div class="prompt-label">Prompt 2 — optimización de hiperparámetros</div>
+    <div class="prompt-block">"PSO no converge al mínimo global de Schwefel. Los parámetros actuales son c1=0.5, c2=0.3, w=0.9. ¿Qué ajustes me recomendarías basados en la literatura para funciones multimodales en alto rango de búsqueda?"</div>
+
+    <p>El impacto de estos prompts en el resultado final fue significativo: el primero permitió automatizar completamente la recolección de datos, eliminando la necesidad de captura manual de los 992 pares de ciudades. El segundo aceleró la generación de visualizaciones animadas que habrían requerido considerablemente más tiempo de implementación desde cero.</p>
+  </div>
+
+  <!-- § 10 Contribuciones y bibliografía -->
+  <div class="section-block" id="s10">
+    <h2 class="section-title">10. Contribuciones individuales y bibliografía</h2>
+    <div class="section-rule"></div>
+
+    <h3 class="subsection-title">Contribuciones individuales</h3>
+    <p>A continuación se describen los aportes específicos de cada integrante del equipo:</p>
+
+    <div class="contrib-grid">
+      <div class="contrib-card">
+        <div class="contrib-name">Juan Felipe Moreno Ruiz</div>
+        <ul>
+          <li>implementación del componente ACO y Entrenamiento]</li>
+          <li>web scraping CAPUFE y construcción de matrices de costo]</li>
+        </ul>
+      </div>
+      <div class="contrib-card">
+        <div class="contrib-name">Daniel Felipe Garzón Acosta</div>
+        <ul>
+          <li>[Implementación del GA para el TSP y entrenamiento]</li>
+          <li>[Elaboración del reporte]</li>
+        </ul>
+      </div>
+      <div class="contrib-card">
+        <div class="contrib-name">Jhanuar Castro López</div>
+        <ul>
+          <li>[Generación de animaciones y visualizaciones en la parte 1]</li>
+          <li>[Elaboración de clases segun las funciones escogidas]</li>
+          <li></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:1.5rem;">
+      <div class="callout-label">Video de contribución individual</div>
+      <p style="margin:0;">Cada integrante del equipo grabó un video corto describiendo en primera persona sus aportes específicos al trabajo. Los videos se encuentran disponibles en el repositorio del proyecto.</p>
+    </div>
+
+    <h3 class="subsection-title">Repositorio de código</h3>
+    <p>El código fuente completo del proyecto —incluyendo la implementación de todos los algoritmos, el script de web scraping y la generación de visualizaciones— se encuentra disponible en el siguiente repositorio Git:</p>
+    <div class="prompt-block">[https://github.com/JhanuarC/RNA-2026-1]</div>
+
+    <h3 class="subsection-title">Bibliografía</h3>
+    <div class="bibliography">
+      <ol>
+        <li>
+          <span class="ref-num">1.</span>
+          <span>Nissan México. (2026). <em>Nissan Versa 2026 – Kit de prensa.</em> Nissan News. <a href="https://mexico.nissannews.com/es-MX/releases/nissan-versa-2026-kit-de-prensa" target="_blank">https://mexico.nissannews.com/es-MX/releases/nissan-versa-2026-kit-de-prensa</a></span>
+        </li>
+        <li>
+          <span class="ref-num">2.</span>
+          <span>Caminos y Puentes Federales. (s.f.). <em>Traza tu ruta.</em> CAPUFE. <a href="https://tarifascapufe.com.mx/traza-tu-ruta/" target="_blank">https://tarifascapufe.com.mx/traza-tu-ruta/</a></span>
+        </li>
+        <li>
+          <span class="ref-num">3.</span>
+          <span>Google Maps. (2026). <em>Coordenadas de ciudades mexicanas.</em> <a href="https://www.google.com/maps" target="_blank">https://www.google.com/maps</a></span>
+        </li>
+        <li>
+          <span class="ref-num">4.</span>
+          <span>Instituto Mexicano del Seguro Social. (2025, abril). <em>Informe mensual del empleo formal. Marzo 2025.</em> <a href="https://www.imss.gob.mx/prensa/archivo/202505/220" target="_blank">https://www.imss.gob.mx/prensa/archivo/202505/220</a></span>
+        </li>
+        <li>
+          <span class="ref-num">5.</span>
+          <span>OCC Mundial. (2025). <em>Ejecutivo de Cuentas TDC – Vacantes activas en México.</em> <a href="https://www.occ.com.mx/empleos/de-tarjetas-de-credito/" target="_blank">https://www.occ.com.mx/empleos/de-tarjetas-de-credito/</a></span>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>Universidad Nacional de Colombia — Facultad de Minas · RNA y Algoritmos Bioinspirados 2026-1</p>
+  <p style="margin-top:0.5rem;">Moreno Ruiz · Garzón Acosta · Castro López</p>
+</footer>
+
+</body>
+</html>
