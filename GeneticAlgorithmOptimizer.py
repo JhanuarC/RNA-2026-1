@@ -179,7 +179,7 @@ class GeneticAlgorithmOptimizer:
         return next_gen
 
     # ------------------------------------------------------------------ #
-    #  Public API                                                          #
+    #  Train                                                             #
     # ------------------------------------------------------------------ #
     def fit(self, map_matrix, iterations=500, mode='min',
             early_stopping_count=50, verbose=True):
@@ -188,7 +188,7 @@ class GeneticAlgorithmOptimizer:
 
         :param map_matrix:           square cost / distance matrix (numpy ndarray)
         :param iterations:           maximum number of generations
-        :param mode:                 'min' or 'max'
+        :param mode:                 'min' ozr 'max'
         :param early_stopping_count: stop if best score unchanged for this many generations
         :param verbose:              print progress
         :return:                     best score found

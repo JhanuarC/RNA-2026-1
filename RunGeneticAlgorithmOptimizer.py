@@ -76,13 +76,13 @@ from GeneticAlgorithmOptimizer import GeneticAlgorithmOptimizer
 optimizer = GeneticAlgorithmOptimizer(
     population_size  = 300,   # más individuos → mejor exploración
     elite_size       = 30,    # ~10 % de élite
-    mutation_rate    = 0.02,  # 2 % de probabilidad de mutación
+    mutation_rate    = 0.05,  # 2 % de probabilidad de mutación
     tournament_size  = 5,
     crossover_method = 'order',     # OX crossover
     mutation_method  = 'inversion'  # inversión de subsecuencia
 )
 
-best = optimizer.fit(matrix, iterations=500, mode='min',
+best = optimizer.fit(matrix, iterations=1000, mode='min',
                      early_stopping_count=80, verbose=True)
 
 optimizer.plot()
