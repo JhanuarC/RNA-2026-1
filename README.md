@@ -74,7 +74,7 @@ Ejecutar las pruebas:
 
 Bash
 python clases.py
-Autor: [Tu Nombre]
+Autores:Jhanuar Castro Lopez
 
 Materia: Optimización
 
