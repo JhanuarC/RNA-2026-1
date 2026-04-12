@@ -1,6 +1,6 @@
 # RNA-2026-1
 
-# Borrador del readme hecho con IA
+# Borrador del readme
 
 
 Optimización Heurística: De Funciones Matemáticas al Problema del Viajero (TSP)
@@ -12,7 +12,7 @@ El proyecto se divide en dos grandes ejes temáticos:
 1. Optimización de Funciones Continuas
 Estudio de la convergencia y eficiencia en paisajes de búsqueda complejos utilizando las funciones de:
 
-Rosenbrock (The Banana Function): Caracterizada por su valle estrecho y curvado donde el gradiente es casi nulo cerca del mínimo global.
+Rosenbrock: Caracterizada por su valle estrecho y curvado donde el gradiente es casi nulo cerca del mínimo global.
 
 Schwefel: Una función altamente multimodal con numerosos mínimos locales que ponen a prueba la capacidad de exploración de los algoritmos.
 
@@ -48,34 +48,39 @@ SciPy: Motores de optimización (BFGS, Differential Evolution).
 PySwarms: Framework para la implementación de PSO.
 
 📁 Estructura del Código
-clases.py: Contiene la lógica modular del proyecto.
 
-Rosenbrock_sgd / Schwefel_sgd: Implementaciones basadas en gradiente.
+Parte 1 del trabajo
+  
+  clases.py: Contiene la lógica modular del proyecto.
+  
+  Rosenbrock_sgd / Schwefel_sgd: Implementaciones basadas en gradiente.
+  
+  Rosenbrock_pso: Implementación de enjambre de partículas.
+  
+  animar_descenso(): Métodos personalizados para la generación de visualizaciones dinámicas.
+  
+  Hallazgos Clave
+  La Trampa de la Planitud: Se identificó que la función de Rosenbrock requiere hasta 4 veces más iteraciones que Schwefel en métodos evolutivos debido a la pérdida de gradiente en su valle central, a pesar de tener una estructura aparentemente "más simple".
+  
+  Exploración vs. Explotación: Las heurísticas (PSO/DE) demostraron ser superiores en la función de Schwefel para evitar quedar atrapados en los profundos mínimos locales que engañan al descenso de gradiente.
+  
+  🔧 Instalación y Uso
+  Clonar el repositorio:
+  
+  Bash
+  git clone: 
+  Instalar dependencias:
+  
+  Bash
+  pip install numpy matplotlib scipy pyswarms
+  Ejecutar las pruebas:
+  
+  Bash
+  python clases.py
+  
+Autores: Daniel Felipe Garzón Acosta, Jhanuar Castro Lopez, Juan Felipe Moreno Ruiz
 
-Rosenbrock_pso: Implementación de enjambre de partículas.
-
-animar_descenso(): Métodos personalizados para la generación de visualizaciones dinámicas.
-
-💡 Hallazgos Clave
-La Trampa de la Planitud: Se identificó que la función de Rosenbrock requiere hasta 4 veces más iteraciones que Schwefel en métodos evolutivos debido a la pérdida de gradiente en su valle central, a pesar de tener una estructura aparentemente "más simple".
-
-Exploración vs. Explotación: Las heurísticas (PSO/DE) demostraron ser superiores en la función de Schwefel para evitar quedar atrapados en los profundos mínimos locales que engañan al descenso de gradiente.
-
-🔧 Instalación y Uso
-Clonar el repositorio:
-
-Bash
-git clone https://github.com/tu-usuario/proyecto-optimizacion.git
-Instalar dependencias:
-
-Bash
-pip install numpy matplotlib scipy pyswarms
-Ejecutar las pruebas:
-
-Bash
-python clases.py
-Autores:Jhanuar Castro Lopez
-
-Materia: Optimización
+ 
+Materia: Redes Neuronales y Algoritmos Bio-inspirados
 
 Fecha: Abril 2026
