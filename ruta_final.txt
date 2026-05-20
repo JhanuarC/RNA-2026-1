@@ -1,0 +1,43 @@
+RUTA FINAL SUGERIDA AL VENDEDOR
+Optimización por Colonia de Hormigas (ACO)
+
+Orden de visitas:
+
+   Inicio        →  Mérida
+   Parada  1     →  Chetumal
+   Parada  2     →  Villahermosa
+   Parada  3     →  Tuxtla Gutiérrez
+   Parada  4     →  Oaxaca
+   Parada  5     →  Puebla
+   Parada  6     →  Chilpancingo
+   Parada  7     →  Cuernavaca
+   Parada  8     →  Ciudad de México
+   Parada  9     →  Toluca
+   Parada 10     →  Morelia
+   Parada 11     →  Guadalajara
+   Parada 12     →  Colima
+   Parada 13     →  Tepic
+   Parada 14     →  Culiacán
+   Parada 15     →  La Paz
+   Parada 16     →  Mexicali
+   Parada 17     →  Hermosillo
+   Parada 18     →  Chihuahua
+   Parada 19     →  Victoria de Durango
+   Parada 20     →  Zacatecas
+   Parada 21     →  Aguascalientes
+   Parada 22     →  Saltillo
+   Parada 23     →  Monterrey
+   Parada 24     →  Ciudad Victoria
+   Parada 25     →  San Luis Potosí
+   Parada 26     →  Guanajuato
+   Parada 27     →  Querétaro
+   Parada 28     →  Pachuca
+   Parada 29     →  Tlaxcala
+   Parada 30     →  Xalapa
+   Parada 31     →  Campeche
+   Regreso       →  Mérida  (ciudad de origen)
+
+   Costo total del recorrido:  $54,762.41 MXN
+
+Nota: La ruta fue calculada minimizando el costo total considerando
+tiempo del vendedor, combustible y casetas de peaje entre capitales.

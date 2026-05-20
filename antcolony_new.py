@@ -230,3 +230,48 @@ ani = animation.FuncAnimation(fig, animate, frames=len(ruta) + 5, interval=300, 
 ani.save("ruta_optima.gif", writer="pillow", fps=3, dpi=120)
 print("GIF guardado como ruta_optima.gif")
 plt.show()
+
+
+# ── RUTA FINAL PARA EL VENDEDOR ───────────────────────────────────────────────
+ruta_nombres = [ciudades[i] for i in optimizer.best_path]
+
+with open("ruta_final.txt", "w", encoding="utf-8") as f:
+    f.write("RUTA FINAL SUGERIDA AL VENDEDOR\n")
+    f.write("Optimización por Colonia de Hormigas (ACO)\n")
+    f.write("\n")
+    f.write("Orden de visitas:\n")
+    f.write("\n")
+    for i, ciudad in enumerate(ruta_nombres):
+        if i == 0:
+            f.write(f"   Inicio        →  {ciudad}\n")
+        elif i == len(ruta_nombres) - 1:
+            f.write(f"   Regreso       →  {ciudad}  (ciudad de origen)\n")
+        else:
+            f.write(f"   Parada {i:>2}     →  {ciudad}\n")
+    f.write("\n")
+    f.write(f"   Costo total del recorrido:  ${best:,.2f} MXN\n")
+    f.write("\n")
+    f.write("Nota: La ruta fue calculada minimizando el costo total considerando\n")
+    f.write("tiempo del vendedor, combustible y casetas de peaje entre capitales.\n")
+
+print("Archivo 'ruta_final.txt' guardado exitosamente.")
+
+from GeneticAlgorithmOptimizer import GeneticAlgorithmOptimizer
+
+ga_optimizer = GeneticAlgorithmOptimizer(
+    population_size=200,
+    elite_size=20,
+    mutation_rate=0.02,
+    tournament_size=5,
+    crossover_method='order',
+    mutation_method='swap'
+)
+
+best_ga = ga_optimizer.fit(matrix, iterations=500)
+ga_optimizer.plot()
+
+# Ruta GA
+ruta_ga = [ciudades[i] for i in ga_optimizer.best_path]
+print("Mejor ruta GA:")
+print(" → ".join(ruta_ga))
+print(f"Costo total GA: ${best_ga:,.2f} MXN")
