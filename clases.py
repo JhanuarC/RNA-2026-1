@@ -9,6 +9,8 @@ from pyswarms.utils.functions import single_obj as fx
 from pyswarms.utils.plotters import plot_cost_history, plot_contour, plot_surface
 from pyswarms.utils.plotters.formatters import Mesher, Designer, Animator
 from matplotlib.animation import FuncAnimation
+import matplotlib.colors as mcolors
+
 
 
 class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos descenso por gradiente
@@ -18,6 +20,7 @@ class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos desce
         self.historia_2d = []
         self.historia_3d = []
         self.trayectoria_2d = []
+        self.trayectoria_3d = []
 
     def evaluate(self, x):#Función de Rosenbrock, se puede usar tanto para 2D como para 3D dependiendo del tamaño de x
             return np.sum(self.b*(x[1:] - x[:-1]**2.0)**2.0 + (self.a - x[:-1])**2.0)
@@ -28,6 +31,7 @@ class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos desce
     
     def callback_3d(self, xk):
         self.historia_3d.append(self.evaluate(xk))
+        self.trayectoria_3d.append(np.copy(xk)) # GUARDAMOS UNA COPIA DEL PUNTO [X, Y, Z] EN CADA ITERACIÓN PARA LA ANIMACIÓN
 
     # Método para optimizar en 2D
     def optimizar_2d(self):
@@ -162,7 +166,7 @@ class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos desce
         return anim
     def animar_descenso_3d(self):
         
-        puntos = np.array(self.trayectoria_2d)#Usamos la misma trayectoria 2D pero la graficamos en 3D, con la altura Z dada por el valor de la función en cada punto (X, Y)
+        puntos = np.array(self.trayectoria_3d)# Usamos la trayectoria 3D generada por la optimización 3D
         if len(puntos) == 0:
             print("No hay trayectoria para animar.")
             return
@@ -240,8 +244,8 @@ class Rosenbrock_sgd:#Clase para la función de Rosenbrock, usando metodos desce
         """#Descomenten las lineas de arriba si quieren guardar la animación como un archivo GIF, 
         pero tengan en cuenta que puede tardar un poco dependiendo de la cantidad de iteraciones y la velocidad de su computadora."""
         self.animacion_3d = self.animar_descenso_3d()
-        """# Guardar en GIF
-        print("Guardando animación 3D... (toma un poco más de tiempo)")
+        # Guardar en GIF
+        """print("Guardando animación 3D... (toma un poco más de tiempo)")
         self.animacion_3d.save('rosenbrock_descenso_3d.gif', writer='pillow', fps=10)
         print("¡GIF 3D guardado!")"""
         plt.show()
@@ -253,6 +257,7 @@ class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso 
         self.historia_2d = []
         self.historia_3d = []
         self.trayectoria_2d = []
+        self.trayectoria_3d = []
 
     def evaluate(self, x):
         # Si x es un vector (optimización), axis=1 (o sumatoria total) suma sus elementos.
@@ -261,10 +266,11 @@ class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso 
     
     def callback_2d(self,xk):
         self.historia_2d.append(self.evaluate(xk))
+        self.trayectoria_2d.append(np.copy(xk)) # GUARDAMOS UNA COPIA DEL PUNTO [X, Y] EN CADA ITERACIÓN PARA LA ANIMACIÓN
         
     def callback_3d(self,xk):
         self.historia_3d.append(self.evaluate(xk))
-        self.trayectoria_2d.append(np.copy(xk)) # GUARDAMOS UNA COPIA DEL PUNTO [X, Y] EN CADA ITERACIÓN PARA LA ANIMACIÓN
+        self.trayectoria_3d.append(np.copy(xk)) # GUARDAMOS UNA COPIA DEL PUNTO [X, Y, Z] EN CADA ITERACIÓN PARA LA ANIMACIÓN
     
     def optimizar_2d(self):
         res_2d = minimize(self.evaluate, x0=np.random.uniform(-20, 20, 2), method='BFGS', callback=self.callback_2d)
@@ -395,7 +401,7 @@ class Schwefel_sgd:#Clase para la función de Schwefel, usando metodos descenso 
         return anim
 
     def animar_descenso_3d(self):
-        puntos = np.array(self.trayectoria_2d)#Usamos la misma trayectoria 2D pero la graficamos en 3D, con la altura Z dada por el valor de la función en cada punto (X, Y)
+        puntos = np.array(self.trayectoria_3d)# Usamos la trayectoria 3D generada por la optimización 3D
         if len(puntos) == 0:
             print("No hay trayectoria para animar.")
             return
@@ -494,6 +500,7 @@ class Rosenbrock_de(Rosenbrock_sgd):#Clase para la función de Rosenbrock, usand
         self.historia_2d = []
         self.historia_3d = []
         self.trayectoria_2d = []
+        self.trayectoria_3d = []
 
 
     def monitor_progreso_2d(self,xk,convergencia):#Función de callback para evolución diferencial, se llama en cada iteración con el punto actual y la convergencia
@@ -502,7 +509,7 @@ class Rosenbrock_de(Rosenbrock_sgd):#Clase para la función de Rosenbrock, usand
 
     def monitor_progreso_3d(self,xk,convergencia):
         self.historia_3d.append(self.evaluate(xk))
-        # GUARDAMOS UNA COPIA DEL PUNTO [X, Y] EN CADA ITERACIÓN PARA LA ANIMACIÓN
+        self.trayectoria_3d.append(np.copy(xk)) # GUARDAMOS UNA COPIA DEL PUNTO [X, Y, Z] EN CADA ITERACIÓN PARA LA ANIMACIÓN
 
     def optimizar_2d(self):
         self.bounds = [(-2, 2)]*2 #Rangos para la optimización en 2D
@@ -578,7 +585,7 @@ class Rosenbrock_de(Rosenbrock_sgd):#Clase para la función de Rosenbrock, usand
         
         
     def animar_descenso_3d(self):
-        puntos = np.array(self.trayectoria_2d)#Usamos la misma trayectoria 2D pero la graficamos en 3D, con la altura Z dada por el valor de la función en cada punto (X, Y)
+        puntos = np.array(self.trayectoria_3d)# Usamos la trayectoria 3D generada por la optimización 3D
         if len(puntos) == 0:
             print("No hay trayectoria para animar.")
             return
@@ -649,8 +656,8 @@ class Rosenbrock_de(Rosenbrock_sgd):#Clase para la función de Rosenbrock, usand
         self.grafica_2d(res_2d)
         self.animacion = self.animar_descenso_2d()
        
-        print("Guardando animación 2D como GIF... (esto puede tardar unos segundos)")
-        """# fps=10 controla la velocidad, writer='pillow' es el motor que crea el gif
+        """print("Guardando animación 2D como GIF... (esto puede tardar unos segundos)")
+        # fps=10 controla la velocidad, writer='pillow' es el motor que crea el gif
         self.animacion.save('rosenbrock_evolucion_difrencial_2d.gif', writer='pillow', fps=12)
         print("¡Animación guardada con éxito!")"""
         plt.show()
@@ -961,30 +968,73 @@ class Rosenbrock_pso(Rosenbrock_sgd):
         faster_anim = Animator(interval=80,repeat = False) #Intervalo entre frames en milisegundos, ajusta según la velocidad deseada
         
         animation = plot_contour(pos_history=historia, mesher=m, designer=d, mark=(0,0),animator=faster_anim)
-        plt.show()
+        return animation
+            
 
     def animacion_3d(self, res_3d):
-        # 1. Preparar la malla
-        m = Mesher(func=self.evaluate, limits=[(-2, 2), (-2, 2)])
+        # res_3d[3] es la historia de posiciones (optimizer.pos_history)
+        historia = res_3d[3]
+        # Reducimos la historia para que la animación sea fluida y no tarde demasiado
+        historia_reducida = historia[::5] # Cada 5 iteraciones
+        if len(historia_reducida) == 0:
+            historia_reducida = historia
+
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+
+        # Límites para Rosenbrock (-2 a 2 en x, y, z)
+        ax.set_xlim([-2, 2])
+        ax.set_ylim([-2, 2])
+        ax.set_zlim([-2, 2])
+
+        ax.set_xlabel('X (x0)')
+        ax.set_ylabel('Y (x1)')
+        ax.set_zlabel('Z (x2)')
+        ax.set_title('Animación 3D del Enjambre de Partículas (PSO - Rosenbrock)')
+
+        # Marcar el óptimo global (1, 1, 1) en Rosenbrock 3D
+        ax.scatter([1], [1], [1], color='red', marker='*', s=200, label='Mínimo Global (1,1,1)', zorder=10)
         
-        # 2. Reducir la historia para que no sea pesada (cada 10 iteraciones)
-        historia_reducida = res_3d[3][::10]
+        # Inicializar el scatter de las partículas
+        scatter = ax.scatter([], [], [], c=[], cmap='viridis', s=30, alpha=0.8, edgecolors='k')
+
+        # Configurar la barra de colores para representar el costo de las partículas
+        todos_los_costos = []
+        for pos in historia_reducida:
+            todos_los_costos.extend(self.evaluate(pos))
+        min_cost = min(todos_los_costos)
+        max_cost = max(todos_los_costos)
         
-        # 3. Formatear la historia para 3D (esto calcula Z para cada partícula)
-        pos_history_3d = m.compute_history_3d(historia_reducida)
-        
-        # 4. Diseñador con límites de Z adecuados para Rosenbrock
-        d = Designer(limits=[(-2, 2), (-2, 2), (0, 500)],
-                     label=['X', 'Y', 'Z'])
-        
-        faster_anim = Animator(interval=80, repeat=False)
-        
-        # IMPORTANTE: Retornar la animación
-        animation = plot_surface(pos_history=pos_history_3d, 
-                                 mesher=m, 
-                                 designer=d, 
-                                 animator=faster_anim)
-        return animation
+        # Usamos escala logarítmica para el costo (Rosenbrock baja de miles a casi 0)
+        norm = mcolors.LogNorm(vmin=max(1e-5, min_cost), vmax=max_cost)
+        mappable = plt.cm.ScalarMappable(cmap='viridis', norm=norm)
+        fig.colorbar(mappable, ax=ax, label='Costo de las partículas (Escala Log)')
+
+        ax.legend()
+
+        def init():
+            scatter._offsets3d = ([], [], [])
+            return scatter,
+
+        def update(frame):
+            posiciones = np.array(historia_reducida[frame]) # (n_particles, 3)
+            x_data = posiciones[:, 0]
+            y_data = posiciones[:, 1]
+            z_data = posiciones[:, 2]
+
+            # Calculamos costo para colorear las partículas
+            costos = self.evaluate(posiciones)
+            
+            # Actualizar coordenadas y colores
+            scatter._offsets3d = (x_data, y_data, z_data)
+            scatter.set_array(costos)
+            
+            ax.set_title(f'Animación 3D del Enjambre (PSO) - Iteración {frame * 5}')
+            return scatter,
+
+        # Crear la animación
+        anim = FuncAnimation(fig, update, frames=len(historia_reducida), init_func=init, blit=False, interval=80, repeat=False)
+        return anim
 
     def ejecutar(self):
         res_2d = self.optimizar_2d()
@@ -993,8 +1043,19 @@ class Rosenbrock_pso(Rosenbrock_sgd):
         self.graficar_evo(res_2d, res_3d)
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
-        self.animacion_2d(res_2d)
-        #self.animacion_3d(res_3d) #esta aun no funciona
+        self.anim_2d = self.animacion_2d(res_2d)
+        self.anim_3d = self.animacion_3d(res_3d)
+        plt.show()
+
+        #Guardar animación 2D
+        """print("Guardando animación 2D... (toma un poco más de tiempo)")
+        self.anim_2d.save('rosenbrock_pso_2d.gif', writer='pillow', fps=12)
+        print("¡GIF 2D guardado!")"""
+
+        #Guardar animación 3D
+        """print("Guardando animación 3D... (toma un poco más de tiempo)")
+        self.anim_3d.save('rosenbrock_pso_3d.gif', writer='pillow', fps=12)
+        print("¡GIF 3D guardado!")"""
 
 class Schwefel_pso(Schwefel_sgd):
     def __init__(self,bounds = None):
@@ -1135,7 +1196,73 @@ class Schwefel_pso(Schwefel_sgd):
                                 designer=d, mesher=m, 
                                 mark=(420.9687,420.9687),animator=faster_anim,
                                )
-        plt.show()
+        return animation
+
+    def animacion_3d(self, res_3d):
+        # res_3d[3] es la historia de posiciones (optimizer.pos_history)
+        historia = res_3d[3]
+        # Reducimos la historia para que la animación sea fluida y no tarde demasiado
+        historia_reducida = historia[::5] # Cada 5 iteraciones
+        if len(historia_reducida) == 0:
+            historia_reducida = historia
+
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+
+        # Límites para Schwefel (-500 a 500 en x, y, z)
+        ax.set_xlim([-500, 500])
+        ax.set_ylim([-500, 500])
+        ax.set_zlim([-500, 500])
+
+        ax.set_xlabel('X (x0)')
+        ax.set_ylabel('Y (x1)')
+        ax.set_zlabel('Z (x2)')
+        ax.set_title('Animación 3D del Enjambre de Partículas (PSO - Schwefel)')
+
+        # Marcar el óptimo global (420.9687, 420.9687, 420.9687) en Schwefel 3D
+        ax.scatter([420.9687], [420.9687], [420.9687], color='red', marker='*', s=200, label='Mínimo Global', zorder=10)
+        
+        # Inicializar el scatter de las partículas
+        scatter = ax.scatter([], [], [], c=[], cmap='plasma', s=30, alpha=0.8, edgecolors='k')
+
+        # Configurar la barra de colores para representar el costo de las partículas
+        import matplotlib.colors as mcolors
+        todos_los_costos = []
+        for pos in historia_reducida:
+            todos_los_costos.extend(self.evaluate(pos))
+        min_cost = min(todos_los_costos)
+        max_cost = max(todos_los_costos)
+        
+        # Usamos escala lineal o logarítmica
+        norm = mcolors.Normalize(vmin=min_cost, vmax=max_cost)
+        mappable = plt.cm.ScalarMappable(cmap='plasma', norm=norm)
+        fig.colorbar(mappable, ax=ax, label='Costo de las partículas')
+
+        ax.legend()
+
+        def init():
+            scatter._offsets3d = ([], [], [])
+            return scatter,
+
+        def update(frame):
+            posiciones = np.array(historia_reducida[frame]) # (n_particles, 3)
+            x_data = posiciones[:, 0]
+            y_data = posiciones[:, 1]
+            z_data = posiciones[:, 2]
+
+            # Calculamos costo para colorear las partículas
+            costos = self.evaluate(posiciones)
+            
+            # Actualizar coordenadas y colores
+            scatter._offsets3d = (x_data, y_data, z_data)
+            scatter.set_array(costos)
+            
+            ax.set_title(f'Animación 3D del Enjambre (PSO) - Iteración {frame * 5}')
+            return scatter,
+
+        # Crear la animación
+        anim = FuncAnimation(fig, update, frames=len(historia_reducida), init_func=init, blit=False, interval=80, repeat=False)
+        return anim
 
     def ejecutar(self):
         res_2d = self.optimizar_2d()
@@ -1144,14 +1271,35 @@ class Schwefel_pso(Schwefel_sgd):
         self.graficar_evo(res_2d, res_3d)
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
-        self.animacion_2d(res_2d)
+        self.anim_2d = self.animacion_2d(res_2d)
+        self.anim_3d = self.animacion_3d(res_3d)
+        plt.show()
+
+        # Guardar animación 2D
+        print("Guardando animación 2D... (toma un poco más de tiempo)")
+        self.anim_2d.save('schwefel_pso_2d.gif', writer='pillow', fps=12)
+        print("¡GIF 2D guardado!")
+
+        # Guardar animación 3D
+        print("Guardando animación 3D... (toma un poco más de tiempo)")
+        self.anim_3d.save('schwefel_pso_3d.gif', writer='pillow', fps=12)
+        print("¡GIF 3D guardado!")
 
 #Optimizacion por Algoritmos Evolutivos
 class Rosenbrock_ea(Rosenbrock_sgd):
     def __init__(self):
         super().__init__()
+        self.historia_poblacion_2d = []
+        self.historia_poblacion_3d = []
+
+    def evaluate(self, x):
+        if x.ndim == 1:
+            return np.sum(self.b*(x[1:] - x[:-1]**2.0)**2.0 + (self.a - x[:-1])**2.0)
+        else:
+            return np.sum(self.b*(x[:, 1:] - x[:, :-1]**2.0)**2.0 + (self.a - x[:, :-1])**2.0, axis=1)
     
     def optimizar_2d(self):
+        self.historia_poblacion_2d = []
         
         def fitness_func(ga_instance,solution,solution_idx):
             func = self.evaluate(solution)#Solution es el array que genera PyGAD
@@ -1159,6 +1307,9 @@ class Rosenbrock_ea(Rosenbrock_sgd):
             #Debido a que Pygad maximiza y nosotros queremos mnimizar, tenemos que usar el inverso de la función como fitness
             fitness = 1.0 / (func + 1e-6) #Agregamos un pequeño valor para evitar división por cero
             return fitness
+        
+        def callback_generacion(ga_instance):
+            self.historia_poblacion_2d.append(np.copy(ga_instance.population))
         
         #Configuracion de dimensionalidad
         num_dimensiones = 2
@@ -1172,7 +1323,8 @@ class Rosenbrock_ea(Rosenbrock_sgd):
         init_range_low=-2.0,
         init_range_high=2.0,
         mutation_percent_genes=20,
-        mutation_num_genes=1
+        mutation_num_genes=1,
+        on_generation=callback_generacion
                                 )
         ga_instance.run()
         solution, solution_fitness, _ = ga_instance.best_solution()
@@ -1181,10 +1333,15 @@ class Rosenbrock_ea(Rosenbrock_sgd):
         return solution, self.evaluate(solution) , ga_instance.best_solutions_fitness
     
     def optimizar_3d(self):
+        self.historia_poblacion_3d = []
+        
         def fitness_func(ga_instance,solution,solution_idx):
             func = self.evaluate(solution)
             fitness = 1.0 / (func + 1e-6)
             return fitness
+        
+        def callback_generacion(ga_instance):
+            self.historia_poblacion_3d.append(np.copy(ga_instance.population))
         
         num_dimensiones = 3
         
@@ -1196,8 +1353,9 @@ class Rosenbrock_ea(Rosenbrock_sgd):
         num_genes=num_dimensiones,
         init_range_low=-2.0,
         init_range_high=2.0,
-        mutation_percent_genes=15,
-        mutation_num_genes=1
+        mutation_percent_genes=20,
+        mutation_num_genes=2,
+        on_generation=callback_generacion
                             )
         ga_instance.run()
         solution, solution_fitness, _ = ga_instance.best_solution()
@@ -1278,6 +1436,120 @@ class Rosenbrock_ea(Rosenbrock_sgd):
             
             except Exception as e:
                 print(f"No se pudo graficar el punto óptimo: {e}")
+
+    def animacion_2d(self, res_2d):
+        historia = self.historia_poblacion_2d
+        historia_reducida = historia[::10]
+        if len(historia_reducida) == 0:
+            historia_reducida = historia
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        
+        # Grid para contorno de Rosenbrock
+        x = np.linspace(-2, 2, 250)
+        y = np.linspace(-1, 3, 250)
+        X, Y = np.meshgrid(x, y)
+        Z = (self.a - X)**2 + self.b * (Y - X**2)**2
+        
+        cp = ax.contour(X, Y, Z, levels=np.logspace(-1, 3, 20), cmap='magma')
+        fig.colorbar(cp, ax=ax, label='Valor de la función (Rosenbrock)')
+        
+        # Óptimo global
+        ax.plot(1, 1, 'go', markersize=12, label='Mínimo Global (1,1)', zorder=4)
+        
+        # Inicializar scatter
+        scatter = ax.scatter([], [], c=[], cmap='viridis', s=25, alpha=0.7, edgecolors='none', zorder=5)
+        
+        # Calcular costos para normalizar colores
+        todos_los_costos = []
+        for pop in historia_reducida:
+            for ind in pop:
+                todos_los_costos.append(self.evaluate(ind))
+        min_cost = min(todos_los_costos)
+        max_cost = max(todos_los_costos)
+        
+        norm = mcolors.LogNorm(vmin=max(1e-5, min_cost), vmax=max_cost)
+        mappable = plt.cm.ScalarMappable(cmap='viridis', norm=norm)
+        fig.colorbar(mappable, ax=ax, label='Costo de los individuos (Escala Log)')
+        
+        ax.set_xlim([-2, 2])
+        ax.set_ylim([-1, 3])
+        ax.set_xlabel('X (x0)')
+        ax.set_ylabel('Y (x1)')
+        ax.set_title('Animación 2D de la Población (EA - Rosenbrock)')
+        ax.legend()
+        
+        def init():
+            scatter.set_offsets(np.empty((0, 2)))
+            scatter.set_array(np.array([]))
+            return scatter,
+            
+        def update(frame):
+            pop = historia_reducida[frame]
+            scatter.set_offsets(pop)
+            costos = np.array([self.evaluate(ind) for ind in pop])
+            scatter.set_array(costos)
+            ax.set_title(f'Animación 2D de la Población (EA) - Generación {frame * 10}')
+            return scatter,
+            
+        anim = FuncAnimation(fig, update, frames=len(historia_reducida), init_func=init, blit=False, interval=80, repeat=False)
+        return anim
+
+    def animacion_3d(self, res_3d):
+        historia = self.historia_poblacion_3d
+        historia_reducida = historia[::25]
+        if len(historia_reducida) == 0:
+            historia_reducida = historia
+
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        
+        ax.set_xlim([-2, 2])
+        ax.set_ylim([-2, 2])
+        ax.set_zlim([-2, 2])
+        
+        ax.set_xlabel('X (x0)')
+        ax.set_ylabel('Y (x1)')
+        ax.set_zlabel('Z (x2)')
+        ax.set_title('Animación 3D de la Población (EA - Rosenbrock)')
+        
+        # Mínimo global (1, 1, 1)
+        ax.scatter([1], [1], [1], color='red', marker='*', s=200, label='Mínimo Global (1,1,1)', zorder=10)
+        
+        # Scatter de la población
+        scatter = ax.scatter([], [], [], c=[], cmap='viridis', s=25, alpha=0.7, edgecolors='none')
+        
+        # Normalizar colores
+        todos_los_costos = []
+        for pop in historia_reducida:
+            for ind in pop:
+                todos_los_costos.append(self.evaluate(ind))
+        min_cost = min(todos_los_costos)
+        max_cost = max(todos_los_costos)
+        
+        norm = mcolors.LogNorm(vmin=max(1e-5, min_cost), vmax=max_cost)
+        mappable = plt.cm.ScalarMappable(cmap='viridis', norm=norm)
+        fig.colorbar(mappable, ax=ax, label='Costo de los individuos (Escala Log)')
+        
+        ax.legend()
+        
+        def init():
+            scatter._offsets3d = ([], [], [])
+            return scatter,
+            
+        def update(frame):
+            pop = historia_reducida[frame]
+            x_data = pop[:, 0]
+            y_data = pop[:, 1]
+            z_data = pop[:, 2]
+            costos = np.array([self.evaluate(ind) for ind in pop])
+            scatter._offsets3d = (x_data, y_data, z_data)
+            scatter.set_array(costos)
+            ax.set_title(f'Animación 3D de la Población (EA) - Generación {frame * 25}')
+            return scatter,
+            
+        anim = FuncAnimation(fig, update, frames=len(historia_reducida), init_func=init, blit=False, interval=80, repeat=False)
+        return anim
     
     def ejecutar(self):
         res_2d = self.optimizar_2d()
@@ -1286,17 +1558,44 @@ class Rosenbrock_ea(Rosenbrock_sgd):
         self.graficar_evo(res_2d, res_3d)
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
+        self.anim_2d = self.animacion_2d(res_2d)
+        self.anim_3d = self.animacion_3d(res_3d)
+        plt.show()
+
+        # Guardar animación 2D
+        """print("Guardando animación 2D... (toma un poco más de tiempo)")
+        self.anim_2d.save('rosenbrock_ea_2d.gif', writer='pillow', fps=12)
+        print("¡GIF 2D guardado!")"""
+
+        # Guardar animación 3D
+        """print("Guardando animación 3D... (toma un poco más de tiempo)")
+        self.anim_3d.save('rosenbrock_ea_3d.gif', writer='pillow', fps=12)
+        print("¡GIF 3D guardado!")"""
    
 class Schwefel_ea(Schwefel_sgd):
     def __init__(self):
         super().__init__()
+        self.historia_poblacion_2d = []
+        self.historia_poblacion_3d = []
+
+    def evaluate(self, x):
+        if x.ndim == 1:
+            return 418.9829 * len(x) - np.sum(x * np.sin(np.sqrt(np.abs(x))), axis=0)
+        if x.ndim == 3 and x.shape[0] == 2:
+            return 418.9829 * 2 - np.sum(x * np.sin(np.sqrt(np.abs(x))), axis=0)
+        return 418.9829 * x.shape[1] - np.sum(x * np.sin(np.sqrt(np.abs(x))), axis=1)
     
     def optimizar_2d(self):
+        self.historia_poblacion_2d = []
+        
         #Función de fitness para Schwefel, similar a la de Rosenbrock pero adaptada a la función de Schwefel
         def fitness_func(ga_instance,solution,solution_idx):
             func = self.evaluate(solution)
             fitness = 1.0 / (func + 1e-6)
             return fitness
+        
+        def callback_generacion(ga_instance):
+            self.historia_poblacion_2d.append(np.copy(ga_instance.population))
         
         num_dimensiones = 2
         
@@ -1309,17 +1608,23 @@ class Schwefel_ea(Schwefel_sgd):
         init_range_low=-500.0,
         init_range_high=500.0,
         mutation_percent_genes=20,
-        mutation_num_genes=1
+        mutation_num_genes=1,
+        on_generation=callback_generacion
                                 )
         ga_instance.run()
         solution, solution_fitness, _ = ga_instance.best_solution()
         return solution, self.evaluate(solution) , ga_instance.best_solutions_fitness
     
     def optimizar_3d(self):
+        self.historia_poblacion_3d = []
+        
         def fitness_func(ga_instance,solution,solution_idx):
             func = self.evaluate(solution)
             fitness = 1.0 / (func + 1e-6)
             return fitness
+        
+        def callback_generacion(ga_instance):
+            self.historia_poblacion_3d.append(np.copy(ga_instance.population))
         
         num_dimensiones = 3
         
@@ -1332,7 +1637,8 @@ class Schwefel_ea(Schwefel_sgd):
         init_range_low=-500.0,
         init_range_high=500.0,
         mutation_percent_genes=15,
-        mutation_num_genes=1
+        mutation_num_genes=1,
+        on_generation=callback_generacion
                             )
         ga_instance.run()
         solution, solution_fitness, _ = ga_instance.best_solution()
@@ -1409,6 +1715,121 @@ class Schwefel_ea(Schwefel_sgd):
             
         except Exception as e:
             print(f"No se pudo graficar el punto óptimo: {e}")
+
+    def animacion_2d(self, res_2d):
+        historia = self.historia_poblacion_2d
+        historia_reducida = historia[::10]
+        if len(historia_reducida) == 0:
+            historia_reducida = historia
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        
+        # Grid para contorno de Schwefel
+        x = np.linspace(-500, 500, 250)
+        y = np.linspace(-500, 500, 250)
+        X, Y = np.meshgrid(x, y)
+        f = lambda x: 418.9829 * len(x) - np.sum(x * np.sin(np.sqrt(np.abs(x))), axis=0)
+        Z = f(np.array([X, Y]))
+        
+        cp = ax.contour(X, Y, Z, levels=np.logspace(1, 5, 20), cmap='magma')
+        fig.colorbar(cp, ax=ax, label='Valor de la función (Schwefel)')
+        
+        # Óptimo global (420.9687, 420.9687)
+        ax.plot(420.9687, 420.9687, 'go', markersize=12, label='Mínimo Global (420.9687,420.9687)', zorder=4)
+        
+        # Inicializar scatter
+        scatter = ax.scatter([], [], c=[], cmap='plasma', s=25, alpha=0.7, edgecolors='none', zorder=5)
+        
+        # Calcular costos para normalizar colores (escala lineal para Schwefel)
+        todos_los_costos = []
+        for pop in historia_reducida:
+            for ind in pop:
+                todos_los_costos.append(self.evaluate(ind))
+        min_cost = min(todos_los_costos)
+        max_cost = max(todos_los_costos)
+        
+        norm = mcolors.Normalize(vmin=min_cost, vmax=max_cost)
+        mappable = plt.cm.ScalarMappable(cmap='plasma', norm=norm)
+        fig.colorbar(mappable, ax=ax, label='Costo de los individuos')
+        
+        ax.set_xlim([-500, 500])
+        ax.set_ylim([-500, 500])
+        ax.set_xlabel('X (x0)')
+        ax.set_ylabel('Y (x1)')
+        ax.set_title('Animación 2D de la Población (EA - Schwefel)')
+        ax.legend()
+        
+        def init():
+            scatter.set_offsets(np.empty((0, 2)))
+            scatter.set_array(np.array([]))
+            return scatter,
+            
+        def update(frame):
+            pop = historia_reducida[frame]
+            scatter.set_offsets(pop)
+            costos = np.array([self.evaluate(ind) for ind in pop])
+            scatter.set_array(costos)
+            ax.set_title(f'Animación 2D de la Población (EA) - Generación {frame * 10}')
+            return scatter,
+            
+        anim = FuncAnimation(fig, update, frames=len(historia_reducida), init_func=init, blit=False, interval=80, repeat=False)
+        return anim
+
+    def animacion_3d(self, res_3d):
+        historia = self.historia_poblacion_3d
+        historia_reducida = historia[::25]
+        if len(historia_reducida) == 0:
+            historia_reducida = historia
+
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        
+        ax.set_xlim([-500, 500])
+        ax.set_ylim([-500, 500])
+        ax.set_zlim([-500, 500])
+        
+        ax.set_xlabel('X (x0)')
+        ax.set_ylabel('Y (x1)')
+        ax.set_zlabel('Z (x2)')
+        ax.set_title('Animación 3D de la Población (EA - Schwefel)')
+        
+        # Mínimo global (420.9687, 420.9687, 420.9687)
+        ax.scatter([420.9687], [420.9687], [420.9687], color='red', marker='*', s=200, label='Mínimo Global', zorder=10)
+        
+        # Scatter de la población
+        scatter = ax.scatter([], [], [], c=[], cmap='plasma', s=25, alpha=0.7, edgecolors='none')
+        
+        # Normalizar colores (escala lineal para Schwefel)
+        todos_los_costos = []
+        for pop in historia_reducida:
+            for ind in pop:
+                todos_los_costos.append(self.evaluate(ind))
+        min_cost = min(todos_los_costos)
+        max_cost = max(todos_los_costos)
+        
+        norm = mcolors.Normalize(vmin=min_cost, vmax=max_cost)
+        mappable = plt.cm.ScalarMappable(cmap='plasma', norm=norm)
+        fig.colorbar(mappable, ax=ax, label='Costo de los individuos')
+        
+        ax.legend()
+        
+        def init():
+            scatter._offsets3d = ([], [], [])
+            return scatter,
+            
+        def update(frame):
+            pop = historia_reducida[frame]
+            x_data = pop[:, 0]
+            y_data = pop[:, 1]
+            z_data = pop[:, 2]
+            costos = np.array([self.evaluate(ind) for ind in pop])
+            scatter._offsets3d = (x_data, y_data, z_data)
+            scatter.set_array(costos)
+            ax.set_title(f'Animación 3D de la Población (EA) - Generación {frame * 25}')
+            return scatter,
+            
+        anim = FuncAnimation(fig, update, frames=len(historia_reducida), init_func=init, blit=False, interval=80, repeat=False)
+        return anim
     
     def ejecutar(self):
         res_2d = self.optimizar_2d()
@@ -1417,3 +1838,19 @@ class Schwefel_ea(Schwefel_sgd):
         self.graficar_evo(res_2d, res_3d)
         self.grafica_3d(res_3d)
         self.grafica_2d(res_2d)
+        self.anim_2d = self.animacion_2d(res_2d)
+        self.anim_3d = self.animacion_3d(res_3d)
+        plt.show()
+
+        # Guardar animación 2D
+        """print("Guardando animación 2D... (toma un poco más de tiempo)")
+        self.anim_2d.save('schwefel_ea_2d.gif', writer='pillow', fps=12)
+        print("¡GIF 2D guardado!")"""
+
+        # Guardar animación 3D
+        """print("Guardando animación 3D... (toma un poco más de tiempo)")
+        self.anim_3d.save('schwefel_ea_3d.gif', writer='pillow', fps=12)
+        print("¡GIF 3D guardado!")"""
+
+
+
