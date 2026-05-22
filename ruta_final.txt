@@ -3,41 +3,41 @@ Optimización por Colonia de Hormigas (ACO)
 
 Orden de visitas:
 
-   Inicio        →  Mérida
-   Parada  1     →  Chetumal
+   Inicio        →  Oaxaca
+   Parada  1     →  Tuxtla Gutiérrez
    Parada  2     →  Villahermosa
-   Parada  3     →  Tuxtla Gutiérrez
-   Parada  4     →  Oaxaca
-   Parada  5     →  Puebla
-   Parada  6     →  Chilpancingo
-   Parada  7     →  Cuernavaca
-   Parada  8     →  Ciudad de México
-   Parada  9     →  Toluca
-   Parada 10     →  Morelia
-   Parada 11     →  Guadalajara
-   Parada 12     →  Colima
-   Parada 13     →  Tepic
-   Parada 14     →  Culiacán
-   Parada 15     →  La Paz
-   Parada 16     →  Mexicali
-   Parada 17     →  Hermosillo
-   Parada 18     →  Chihuahua
-   Parada 19     →  Victoria de Durango
-   Parada 20     →  Zacatecas
-   Parada 21     →  Aguascalientes
-   Parada 22     →  Saltillo
-   Parada 23     →  Monterrey
-   Parada 24     →  Ciudad Victoria
-   Parada 25     →  San Luis Potosí
-   Parada 26     →  Guanajuato
-   Parada 27     →  Querétaro
-   Parada 28     →  Pachuca
-   Parada 29     →  Tlaxcala
-   Parada 30     →  Xalapa
-   Parada 31     →  Campeche
-   Regreso       →  Mérida  (ciudad de origen)
+   Parada  3     →  Campeche
+   Parada  4     →  Mérida
+   Parada  5     →  Chetumal
+   Parada  6     →  Xalapa
+   Parada  7     →  Pachuca
+   Parada  8     →  Querétaro
+   Parada  9     →  Guanajuato
+   Parada 10     →  Aguascalientes
+   Parada 11     →  Zacatecas
+   Parada 12     →  San Luis Potosí
+   Parada 13     →  Cd. Victoria
+   Parada 14     →  Monterrey
+   Parada 15     →  Saltillo
+   Parada 16     →  Durango
+   Parada 17     →  Chihuahua
+   Parada 18     →  Hermosillo
+   Parada 19     →  Mexicali
+   Parada 20     →  La Paz
+   Parada 21     →  Culiacán
+   Parada 22     →  Tepic
+   Parada 23     →  Guadalajara
+   Parada 24     →  Colima
+   Parada 25     →  Morelia
+   Parada 26     →  Toluca
+   Parada 27     →  Ciudad de México
+   Parada 28     →  Cuernavaca
+   Parada 29     →  Chilpancingo
+   Parada 30     →  Puebla
+   Parada 31     →  Tlaxcala
+   Regreso       →  Oaxaca  (ciudad de origen)
 
-   Costo total del recorrido:  $54,762.41 MXN
+   Costo total del recorrido:  $55,872.54 MXN
 
 Nota: La ruta fue calculada minimizando el costo total considerando
 tiempo del vendedor, combustible y casetas de peaje entre capitales.

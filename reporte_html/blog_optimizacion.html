@@ -292,7 +292,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.5rem;
     color: var(--ink-muted);
     font-family: 'JetBrains Mono', monospace;
@@ -306,6 +306,7 @@
     font-style: italic;
     color: var(--ink-light);
     font-family: 'Source Serif 4', serif;
+    margin-top: 4px;
   }
   .figure-caption strong {
     font-style: normal;
@@ -529,6 +530,7 @@
     <div class="math-block">
       f(x) = Σ<sub>i=1</sub><sup>n-1</sup> [ 100·(x<sub>i+1</sub> − x<sub>i</sub>²)² + (1 − x<sub>i</sub>)² ]<br>
       donde  x = [x₁, …, xₙ]
+      <div class="figure-caption"><strong>Ecuación 1.</strong> Función de Rosenbrock</div>
     </div>
 
     <p>El mínimo global se alcanza en <code>x* = (1, 1, …, 1)</code> con <code>f(x*) = 0</code>. Para <em>N</em> = 3, el punto óptimo es <code>(1, 1, 1)</code>.</p>
@@ -538,6 +540,7 @@
 
     <div class="math-block">
       f(x) = 418.9829·n − Σ<sub>i=1</sub><sup>n</sup> x<sub>i</sub>·sin(√|x<sub>i</sub>|)
+      <div class="figure-caption "><strong>Ecuación 2.</strong> Función de Schwefel</div>
     </div>
 
     <p>El mínimo global se encuentra en <code>x* = (420.9687, 420.9687, …)</code> con <code>f(x*) = 0</code>. El dominio habitual de evaluación es <code>x<sub>i</sub> ∈ [−500, 500]</code>.</p>
@@ -562,19 +565,27 @@
     <h4 class="inner-title">Implementación</h4>
     <p>Se desarrollaron clases especializadas para cada función: <code>Rosenbrock_sgd</code> y <code>Schwefel_sgd</code>. Cada clase incluye la evaluación de la función objetivo, la optimización en 2D y 3D, el registro de la trayectoria mediante funciones <em>callback</em>, y la visualización del proceso de convergencia. Las animaciones generadas en formato GIF permiten observar cómo el algoritmo recorre el espacio de búsqueda.</p>
 
+    <p>La Figura 1 muestra la trayectoria del algoritmo BFGS sobre la función de Rosenbrock en sus versiones 2D y 3D. Se ilustra cómo el método recorre el espacio de búsqueda partiendo de un punto inicial aleatorio hasta alcanzar el mínimo global.</p>
+
     <!-- Placeholder figura 1 -->
     <div class="figure-block">
-      <div class="figure-placeholder">
-         <img src="rosenbrock_descenso_2d.gif" alt="Animación descenso por gradiente Rosenbrock 2D" width="400" />
+      <div class="figure-placeholder" >
+        <img src="../graficas_punto_1/Descenso por gradiente/Rosenbrock/rosenbrock_descenso_2d.gif" alt="Animación descenso por gradiente Rosenbrock 2D" width="400" />
+        <img src="../graficas_punto_1/Descenso por gradiente/Rosenbrock/rosenbrock_descenso_3d.gif" alt="Animación descenso por gradiente Rosenbrock 3D" width="400" />
       </div>
-      <div class="figure-caption"><strong>Figura 1.</strong> Animación del proceso de descenso por gradiente (BFGS) sobre la función de Rosenbrock en 2D. Se observa la trayectoria a lo largo del valle estrecho hasta la convergencia al mínimo global.</div>
+      <div class="figure-caption"><strong>Figura 1.</strong> Animación del proceso de descenso por gradiente (BFGS) sobre la función de Rosenbrock en 2D y 3D. Se observa la trayectoria a lo largo del valle estrecho hasta la convergencia al mínimo global.</div>
     </div>
+
+    <p>Se observa que el método BFGS navega eficientemente a lo largo del valle curvo y estrecho característico de Rosenbrock, convergiendo al mínimo global <code>(1, 1)</code> con tan solo 102 evaluaciones en 2D. La trayectoria revela la capacidad del gradiente para orientar la búsqueda de forma precisa en funciones suaves y unimodales.</p>
+
+    <p>La Figura 2 presenta el mismo experimento aplicado a la función de Schwefel, cuya alta multimodalidad representa un escenario completamente distinto para el método basado en gradiente.</p>
 
     <div class="figure-block">
       <div class="figure-placeholder">
-        <img src="schwefel_descenso_2d_sgd.gif" alt="Animación descenso por gradiente Schwefel 2D" width="400" />
+        <img src="../graficas_punto_1/Descenso por gradiente/Schwefel/schwefel_descenso_2d_sgd.gif" alt="Animación descenso por gradiente Schwefel 2D" width="400" />
+        <img src="../graficas_punto_1/Descenso por gradiente/Schwefel/schwefel_descenso_3d_sgd.gif" alt="Animación descenso por gradiente Schwefel 3D" width="400" />
       </div>
-      <div class="figure-caption"><strong>Figura 2.</strong> Animación del proceso de descenso por gradiente (BFGS) sobre la función de Schwefel en 2D. Nótese la convergencia a un mínimo local dada la alta multimodalidad de la función.</div>
+      <div class="figure-caption"><strong>Figura 2.</strong> Animación del proceso de descenso por gradiente (BFGS) sobre la función de Schwefel en 2D y 3D. Nótese la convergencia a un mínimo local dada la alta multimodalidad de la función.</div>
     </div>
   </div>
 
@@ -587,6 +598,30 @@
 
     <h3 class="subsection-title">Evolución Diferencial (DE)</h3>
     <p>Se utilizó la función <code>scipy.optimize.differential_evolution</code>. Este método poblacional genera nuevos candidatos combinando la diferencia entre individuos aleatorios de la población actual, sin requerir el cálculo del gradiente. Las clases implementadas fueron <code>Rosenbrock_de</code> y <code>Schwefel_de</code>, con límites de búsqueda definidos por el dominio de cada función.</p>
+    
+    <p>La Figura 3 ilustra la dinámica de la Evolución Diferencial sobre la función de Rosenbrock. A diferencia del BFGS, la DE opera con una población de soluciones candidatas que evoluciona simultáneamente en el espacio de búsqueda.</p>
+
+    <div class="figure-block">
+      <div class="figure-placeholder">
+         <img src="../graficas_punto_1/Evolucion diferencial/Rosenbrock/rosenbrock_evolucion_difrencial_2d.gif" alt="Animación Evolución Diferencial 2D" width="400" />
+         <img src="../graficas_punto_1/Evolucion diferencial/Rosenbrock/rosenbrock_evolucion_difrencial_3d.gif" alt="Animación Evolución Diferencial 3D" width="400" /> 
+        </div>
+      <div class="figure-caption"><strong>Figura 3.</strong> Animación del proceso de evolucion diferencial sobre la función de Rosenbrock en 2D y 3D. Se observa la trayectoria a lo largo del valle estrecho hasta la convergencia al mínimo global.</div>
+    </div>
+
+    <p>El hallazgo principal es que la DE logra convergir al mínimo global <code>(1, 1)</code> con <code>f(x*) ≈ 0</code>, requiriendo 3 753 evaluaciones en 2D. Si bien esto es significativamente más costoso que el BFGS (102 evaluaciones), la DE ofrece mayor robustez al no depender de una trayectoria local única.</p>
+
+    <p>La Figura 4 muestra el comportamiento de la DE aplicada a la función de Schwefel, donde su capacidad de exploración global cobra especial relevancia frente a la alta densidad de mínimos locales.</p>
+
+    <div class="figure-block">
+      <div class="figure-placeholder">
+         <img src="../graficas_punto_1/Evolucion diferencial/Schwefel/schwefel_evolucion_diferencial_2d.gif" alt="Animación Evolución Diferencial 2D" width="400" />
+         <img src="../graficas_punto_1/Evolucion diferencial/Schwefel/schwefel_evolucion_diferencial_3d.gif" alt="Animación Evolución Diferencial 3D" width="400" /> 
+        </div>
+      <div class="figure-caption"><strong>Figura 4.</strong> Animación del proceso de evolucion diferencial sobre la función de Schwefel en 2D y 3D. Se observa la trayectoria a lo largo del valle estrecho hasta la convergencia al mínimo global.</div>
+    </div>
+
+    <p>A diferencia del BFGS, la DE logra identificar la región del mínimo global en <code>x* ≈ (420.97, 420.97)</code> con <code>f(x*) ≈ 2.55 × 10⁻⁵</code>. Este resultado confirma que la exploración poblacional es clave para escapar de los numerosos mínimos locales de Schwefel.</p>
 
     <h3 class="subsection-title">Optimización por Enjambre de Partículas (PSO)</h3>
     <p>Se empleó la librería <code>pyswarms</code>. En este enfoque, cada partícula ajusta su posición en función de su mejor experiencia individual y la mejor posición colectiva del enjambre. Los parámetros principales son:</p>
@@ -597,74 +632,126 @@
     </div>
     <p>Las clases implementadas fueron <code>Rosenbrock_pso</code> y <code>Schwefel_pso</code>.</p>
 
+    <p>Las Figuras 5 y 6 presentan la evolución del enjambre de partículas sobre Rosenbrock y Schwefel respectivamente. El comportamiento colectivo del enjambre permite observar cómo la información se propaga entre partículas a lo largo de las iteraciones.</p>
+
+    <div class="figure-block">
+      <div class="figure-placeholder">
+        <img src="../graficas_punto_1/Enjambre de particulas/Rosenbrock/rosenbrock_pso_2d.gif" alt="Animación PSO Rosenbrock 2D" width="400" />
+        <img src="../graficas_punto_1/Enjambre de particulas/Rosenbrock/rosenbrock_pso_3d.gif" alt="Animación PSO Rosenbrock 3D" width="400" />
+      </div>
+      <div class="figure-caption"><strong>Figura 5.</strong> Animación del proceso de optimización por enjambre de partículas sobre la función de Rosenbrock en 2D y 3D. Se observa la capacidad del método para explorar el espacio de búsqueda y encontrar el mínimo global.</div>
+    </div>
+
+    <p>El PSO alcanza el mínimo global de Rosenbrock con <code>f(x*) ≈ 0</code> en 2D, aunque requiere 50 000 evaluaciones. En 3D la convergencia es menos precisa (<code>f ≈ 4.90 × 10⁻⁵</code>), lo que sugiere que el balance entre exploración y explotación se vuelve más crítico a medida que aumenta la dimensionalidad.</p>
+
+    <div class="figure-block">
+      <div class="figure-placeholder">
+        <img src="../graficas_punto_1/Enjambre de particulas/Schwefel/schwefel_pso_2d.gif" alt="Animación PSO Schwefel 2D" width="400" />
+        <img src="../graficas_punto_1/Enjambre de particulas/Schwefel/schwefel_pso_3d.gif" alt="Animación PSO Schwefel 3D" width="400" />
+      </div>
+    <div class="figure-caption"><strong>Figura 6.</strong> Animación del proceso de optimización por enjambre de partículas sobre la función de Schwefel en 2D y 3D. Se observa la capacidad del método para explorar el espacio de búsqueda y encontrar el mínimo global.</div>
+      
+    
+  </div>
+  <p>El PSO converge exitosamente al mínimo global de Schwefel en ambas dimensiones (<code>f ≈ 2.55 × 10⁻⁵</code> en 2D), demostrando que la dinámica social del enjambre permite navegar entornos altamente multimodales con mayor efectividad que el gradiente puro.</p>
+
+
+
     <h3 class="subsection-title">Algoritmos Evolutivos (GA)</h3>
     <p>Se utilizó la librería <code>pygad</code>. Dado que <code>pygad</code> maximiza por defecto, la función de aptitud se definió como:</p>
 
     <div class="math-block">fitness(x) = 1 / (f(x) + ε)</div>
+    <div class="figure-caption"><strong>Ecuación 3.</strong> Función de aptitud para algoritmos evolutivos</div>
 
-    <p>donde <em>ε</em> es una constante pequeña para evitar divisiones por cero. Las clases implementadas fueron <code>Rosenbrock_ea</code> y <code>Schwefel_ea</code>. Los operadores utilizados incluyen selección por torneo, cruce y mutación aleatoria.</p>
+    <p>donde <em>ε</em> es una constante pequeña para evitar divisiones por cero. Las Figuras 7 y 8 muestran la evolución generacional del GA sobre ambas funciones de prueba, permitiendo observar cómo la población se concentra progresivamente en regiones de menor costo.</p>
 
-    <!-- Placeholder figura 3 -->
-    <!-- Figura 3 -->
+    <div class="figure-block">
+      <div class="figure-placeholder">
+        <img src="../graficas_punto_1/Algoritmo Evolutivo/Rosenbrock/rosenbrock_ea_2d.gif" alt="Animación GA Rosenbrock 2D" width="400" />
+        <img src="../graficas_punto_1/Algoritmo Evolutivo/Rosenbrock/rosenbrock_ea_3d.gif" alt="Animación GA Rosenbrock 3D" width="400" />
+      </div>
+      <div class="figure-caption"><strong>Figura 7.</strong> Animación del proceso de optimización por algoritmo evolutivo sobre la función de Rosenbrock en 2D y 3D. Se observa la capacidad del método para explorar el espacio de búsqueda y encontrar el mínimo global.</div>
+    </div>
+
+    <p>En 2D el GA obtiene <code>f ≈ 6.30 × 10⁻⁴</code>, una aproximación competitiva aunque ligeramente inferior a la DE y el PSO. En 3D el resultado se deteriora más notablemente (<code>f ≈ 0.202</code>), lo que evidencia que con los operadores estándar de <code>pygad</code> y sin ajuste fino de hiperparámetros, el GA presenta dificultades para explotar el valle estrecho de Rosenbrock en alta dimensión.</p>
+
+    <div class="figure-block">
+      <div class="figure-placeholder">
+        <img src="../graficas_punto_1/Algoritmo Evolutivo/Schwefel/schwefel_ea_2d.gif" alt="Animación GA Schwefel 2D" width="400" />
+        <img src="../graficas_punto_1/Algoritmo Evolutivo/Schwefel/schwefel_ea_3d.gif" alt="Animación GA Schwefel 3D" width="400" />
+      </div>
+      <div class="figure-caption"><strong>Figura 8.</strong> Animación del proceso de optimización por algoritmo evolutivo sobre la función de Schwefel en 2D y 3D. Se observa la capacidad del método para explorar el espacio de búsqueda y encontrar el mínimo global.</div>
+    </div>
+
+    <p>En la función de Schwefel el GA recupera su competitividad: alcanza <code>f ≈ 2.55 × 10⁻⁵</code> en 2D y <code>f ≈ 3.82 × 10⁻⁵</code> en 3D, igualando los resultados de la DE. Esto sugiere que la diversidad genética inherente al GA es un mecanismo efectivo para escapar de los mínimos locales de funciones multimodales.</p>
+
+    <p>La Figura 9 presenta una comparación lado a lado de las curvas de convergencia de los tres métodos heurísticos sobre la función de Rosenbrock, lo que permite contrastar visualmente su velocidad de mejora a lo largo de las iteraciones.</p>
+    <!-- Placeholder figura 6 -->
+    <!-- Figura 6 -->
     <div class="figure-block">
       <div class="figure-images" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
         
         <div style="text-align: center;">
-          <img src="Evolucion de optimizacion_rosenbrock_DG.png" alt="DG Rosenbrock" style="width: 250px; border-radius: 8px;">
+          <img src="../graficas_punto_1//Descenso por gradiente/Rosenbrock/Evolucion de optimizacion.png" alt="DG Rosenbrock" style="width: 250px; border-radius: 8px;">
           <p>Descenso por gradiente</p>
         </div>
 
         <div style="text-align: center;">
-          <img src="Evolucion de optimizacion_rosenbrock_EP.png" alt="PSO Rosenbrock" style="width: 250px; border-radius: 8px;">
+          <img src="../graficas_punto_1/Enjambre de particulas/Rosenbrock/Evolucion de optimizacion.png" alt="PSO Rosenbrock" style="width: 250px; border-radius: 8px;">
           <p>Enjambre de partículas</p>
         </div>
 
         <div style="text-align: center;">
-          <img src="Evolucion de optimizacion_rosenbrock_GA.png" alt="GA Rosenbrock" style="width: 250px; border-radius: 8px;">
+          <img src="../graficas_punto_1/Algoritmo Evolutivo/Rosenbrock/Evolucion de optimizacion.png" alt="GA Rosenbrock" style="width: 250px; border-radius: 8px;">
           <p>Algoritmo Genético</p>
         </div>
 
       </div>
 
       <div class="figure-caption">
-        <strong>Figura 3.</strong> Comparación visual del proceso de optimización en la función de Rosenbrock (2D) usando DE, PSO y GA. Se observan diferencias en la velocidad de convergencia y exploración del espacio de búsqueda.
+        <strong>Figura 9.</strong> Comparación visual del proceso de optimización en la función de Rosenbrock (2D) usando DE, PSO y GA. Se observan diferencias en la velocidad de convergencia y exploración del espacio de búsqueda.
       </div>
     </div>
 
-    <!-- Placeholder figura 4 -->
-    <!-- Figura 4 -->
+    <p>El hallazgo principal es la diferencia drástica en eficiencia: el BFGS converge en menos de 200 evaluaciones, mientras que PSO y GA requieren decenas de miles. Sin embargo, esta ventaja del BFGS solo es válida para Rosenbrock por su naturaleza unimodal; en funciones más complejas esta eficiencia desaparece.</p>
+
+    <p>La Figura 10 replica la comparación para la función de Schwefel, escenario donde los roles se invierten respecto a la Figura 9.</p>
+
+    <!-- Placeholder figura 7 -->
+    <!-- Figura 7 -->
     <div class="figure-block">
       <div class="figure-images" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
         
         <div style="text-align: center;">
-          <img src="Evolucion de optimizacion_schwefel_DG.png" alt="DG Schwefel" style="width: 250px; border-radius: 8px;">
+          <img src="../graficas_punto_1//Descenso por gradiente/Schwefel/Evolucion de optimizacion.png" alt="DG Schwefel" style="width: 250px; border-radius: 8px;">
           <p>Descenso por gradiente</p>
         </div>
 
         <div style="text-align: center;">
-          <img src="evolucion de optimizacion_schwefel_EP.png" alt="PSO Schwefel" style="width: 250px; border-radius: 8px;">
+          <img src="../graficas_punto_1/Enjambre de particulas/Schwefel/Evolucion de optimizacion.png" alt="PSO Schwefel" style="width: 250px; border-radius: 8px;">
           <p>Enjambre Particulas</p>
         </div>
 
         <div style="text-align: center;">
-          <img src="Evolucion de optimizacion_schwefel_GA.png" alt="GA Schwefel" style="width: 250px; border-radius: 8px;">
+          <img src="../graficas_punto_1/Algoritmo Evolutivo/Schwefel/Evolucion de optimizacion.png" alt="GA Schwefel" style="width: 250px; border-radius: 8px;">
           <p>Algoritmo Genético</p>
         </div>
 
       </div>
 
       <div class="figure-caption">
-        <strong>Figura 4.</strong> Comparación visual del proceso de optimización en la función de Schwefel (2D) usando DE, PSO y GA. Se observan diferencias en la velocidad de convergencia y exploración del espacio de búsqueda.
+        <strong>Figura 10.</strong> Comparación visual del proceso de optimización en la función de Schwefel (2D) usando DE, PSO y GA. Se observan diferencias en la velocidad de convergencia y exploración del espacio de búsqueda.
       </div>
     </div>
-  
+    <p>El contraste es contundente: mientras BFGS se estanca en un mínimo local con valor superior a 800, los métodos heurísticos convergen al mínimo global con valores en el orden de 10⁻⁵. Esto confirma que la exploración global es indispensable cuando la función objetivo presenta múltiples atractores locales.</p>
+
 
   <!-- § 4 Resultados tabla -->
   <div class="section-block" id="s4">
     <h2 class="section-title">4. Resultados de optimización numérica</h2>
     <div class="section-rule"></div>
 
-    <p>La Tabla 1 resume los resultados obtenidos al optimizar las dos funciones de prueba en 2D y 3D con cada uno de los cuatro métodos evaluados. Se reportan los valores teóricos, los valores alcanzados y el número de evaluaciones requeridas.</p>
+    <p>Con el fin de consolidar los resultados obtenidos por los cuatro métodos evaluados, la Tabla 1 resume para cada combinación de función, dimensionalidad y algoritmo: la posición teórica del mínimo global, la posición efectivamente alcanzada, el valor de la función objetivo y el número total de evaluaciones requeridas.</p>
 
     <div class="table-wrap">
       <table>
@@ -701,6 +788,8 @@
       </table>
     </div>
     <p class="table-caption"><strong>Tabla 1.</strong> Resultados finales de optimización para las funciones Rosenbrock y Schwefel en 2D y 3D con cuatro métodos distintos. Se reportan la posición teórica del mínimo global, la posición alcanzada, el valor de la función objetivo y el número de evaluaciones.</p>
+  
+    <p>El hallazgo más relevante de la tabla es la brecha entre BFGS y los métodos heurísticos según el tipo de función. En Rosenbrock, BFGS alcanza valores de <code>f(x*) ≈ 10⁻¹¹</code> con menos de 300 evaluaciones, superando a cualquier heurístico. En Schwefel, en cambio, BFGS falla completamente (valores >800), mientras que DE, PSO y GA convergen al mínimo global con valores del orden de <code>10⁻⁵</code>. La Evolución Diferencial destaca como el heurístico más eficiente en número de evaluaciones, completando la tarea con 1 086 y 2 585 llamadas en Schwefel 2D y 3D respectivamente.</p>
   </div>
 
   <!-- § 5 Discusión -->
@@ -747,6 +836,7 @@
 
     <div class="math-block">
       Costo/hora = 30 000 MXN ÷ 160 h = 187.5 MXN/h
+      <div class="figure-caption"><strong>Ecuación 4.</strong> Costo por hora del vendedor</div>
     </div>
 
     <p>Cada hora invertida en desplazamiento representa tiempo no dedicado a ventas, por lo que se incorpora como costo económico real dentro de la función objetivo del TSP. Este parámetro también permite analizar la sensibilidad de la ruta óptima ante variaciones en el valor del tiempo del vendedor.</p>
@@ -759,100 +849,350 @@
 
     <div class="math-block">
       C<sub>ij</sub> = (t<sub>ij</sub> · c<sub>h</sub>) + c<sub>combustible</sub> + c<sub>casetas</sub>
+      <div class="figure-caption"><strong>Ecuación 5.</strong> Función de costo entre ciudades</div>
     </div>
 
     <p>donde <em>t<sub>ij</sub></em> es el tiempo de viaje en horas, <em>c<sub>h</sub></em> = 187.5 MXN/h es el costo por hora del vendedor, y los costos de combustible y casetas se extrajeron directamente de la calculadora de rutas.</p>
   </div>
 
-  <!-- § 7 ACO -->
-  <div class="section-block" id="s7">
-    <h2 class="section-title">7. Colonias de hormigas (ACO)</h2>
-    <div class="section-rule"></div>
+<!-- § 7 ACO -->
+<div class="section-block" id="s7">
+  <h2 class="section-title">7. Colonias de hormigas (ACO)</h2>
+  <div class="section-rule"></div>
 
-    <p>Para la resolución del Problema del Viajero (TSP) con las 32 capitales de México se implementó el algoritmo de <strong>Optimización por Colonias de Hormigas</strong> (<em>Ant Colony Optimization</em>, ACO), una metaheurística bioinspirada en el comportamiento colectivo de las hormigas al explorar caminos entre su colonia y fuentes de alimento.</p>
+  <p>Para la resolución del Problema del Viajero (TSP) con las 32 capitales de México se implementó el algoritmo de <strong>Optimización por Colonias de Hormigas</strong> (<em>Ant Colony Optimization</em>, ACO), una metaheurística bioinspirada en el comportamiento colectivo de las hormigas al explorar caminos entre su colonia y fuentes de alimento.</p>
 
-    <h3 class="subsection-title">Construcción de soluciones</h3>
-    <p>En cada iteración, un conjunto de hormigas construye rutas completas partiendo de una ciudad inicial aleatoria. La probabilidad de elegir la siguiente ciudad está determinada por:</p>
+  <h3 class="subsection-title">Construcción de soluciones</h3>
+  <p>En cada iteración, un conjunto de hormigas construye rutas completas partiendo de una ciudad inicial aleatoria. La probabilidad de elegir la siguiente ciudad está determinada por:</p>
 
-    <div class="math-block">
-      P<sub>ij</sub> ∝ (τ<sub>ij</sub>)<sup>α</sup> · (η<sub>ij</sub>)<sup>β</sup>
-    </div>
+  <div class="math-block">
+    P<sub>ij</sub> ∝ (τ<sub>ij</sub>)<sup>α</sup> · (η<sub>ij</sub>)<sup>β</sup>
+    <div class="figure-caption"><strong>Ecuación 6.</strong> Probabilidad de selección de la siguiente ciudad en ACO</div>
+  </div>
 
-    <p>donde <em>τ<sub>ij</sub></em> es la cantidad de feromona en la arista <em>(i, j)</em>, <em>η<sub>ij</sub></em> = 1/<em>C<sub>ij</sub></em> es la información heurística, y los parámetros <em>α</em> y <em>β</em> controlan la influencia relativa de cada componente. El parámetro <code>choose_best</code> introduce una probabilidad de selección directa de la mejor opción disponible, equilibrando exploración y explotación.</p>
+  <p>donde <em>τ<sub>ij</sub></em> es la cantidad de feromona en la arista <em>(i, j)</em>, <em>η<sub>ij</sub></em> = 1/<em>C<sub>ij</sub></em> es la información heurística, y los parámetros <em>α</em> y <em>β</em> controlan la influencia relativa de cada componente. El parámetro <code>choose_best</code> introduce una probabilidad de selección directa de la mejor opción disponible, equilibrando exploración y explotación.</p>
 
-    <h3 class="subsection-title">Actualización de feromonas</h3>
-    <p>Al finalizar cada iteración, las feromonas se actualizan mediante dos mecanismos: <strong>evaporación</strong> (reducción global para evitar convergencia prematura) e <strong>intensificación</strong> (incremento sobre las aristas de la mejor ruta encontrada en esa iteración). Este ciclo refuerza progresivamente las rutas de menor costo.</p>
+  <h3 class="subsection-title">Actualización de feromonas</h3>
+  <p>Al finalizar cada iteración, las feromonas se actualizan mediante dos mecanismos: <strong>evaporación</strong> (reducción global para evitar convergencia prematura) e <strong>intensificación</strong> (incremento sobre las aristas de la mejor ruta encontrada en esa iteración). Este ciclo refuerza progresivamente las rutas de menor costo.</p>
 
-    <h4 class="inner-title">Parámetros utilizados</h4>
-    <div class="param-grid">
-      <span class="param-key">Hormigas</span><span class="param-val">200</span>
-      <span class="param-key">Iteraciones</span><span class="param-val">500</span>
-      <span class="param-key">Evaporación</span><span class="param-val">0.3</span>
-      <span class="param-key">Intensificación</span><span class="param-val">3</span>
-      <span class="param-key">α</span><span class="param-val">1</span>
-      <span class="param-key">β</span><span class="param-val">3</span>
-      <span class="param-key">choose_best</span><span class="param-val">0.2</span>
-    </div>
+  <h4 class="inner-title">Parámetros utilizados</h4>
+  <div class="param-grid">
+    <span class="param-key">Hormigas</span>        <span class="param-val">200</span>
+    <span class="param-key">Iteraciones</span>      <span class="param-val">500 (configuradas)</span>
+    <span class="param-key">Evaporación</span>      <span class="param-val">0.3</span>
+    <span class="param-key">Intensificación</span>  <span class="param-val">3</span>
+    <span class="param-key">α</span>                <span class="param-val">1</span>
+    <span class="param-key">β</span>                <span class="param-val">3</span>
+    <span class="param-key">choose_best</span>      <span class="param-val">0.2</span>
+    <span class="param-key">early_stopping</span>  <span class="param-val">20 iteraciones sin mejora</span>
+  </div>
 
-    <!-- Placeholder figura ACO -->
-    <div class="figure-block">
-      <div class="figure-placeholder">
-        <img src="ruta_aco_optima.gif" alt="GIF de la ruta óptima ACO sobre el mapa de México" width="400">
-      </div>
-      <div class="figure-caption"><strong>Figura 4.</strong> Animación del recorrido óptimo encontrado por ACO entre las 32 capitales de México. El GIF muestra la construcción progresiva de la ruta, la posición actual (punto rojo), el cierre del ciclo y el costo total al finalizar.</div>
+  <h3 class="subsection-title">Resultado obtenido</h3>
+
+  <div class="callout">
+    <div class="callout-label">Mejor solución — ACO</div>
+    <p style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);margin:0 0 0.5rem;">
+      <strong>Costo total: $55,872.54 MXN</strong>
+    </p>
+    <p style="font-size:0.85rem;color:var(--ink-light);margin:0;">
+      Costo inicial: $62,748.22 MXN · Mejora: −$6,875.68 (−11.0 %)<br>
+      Mejor solución en iteración 16 · Parada anticipada en iteración 19 · Runtime: &lt; 1 min
+    </p>
+  </div>
+
+  <h4 class="inner-title">Mejor ruta encontrada — ACO (inicio: Oaxaca)</h4>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;line-height:2;">
+    <div style="display:grid;grid-template-columns:auto auto 1fr;gap:0 1rem;">
+      <span style="color:var(--accent);font-weight:600;">Inicio</span>      <span style="color:var(--ink-muted);">→</span> <span>Oaxaca</span>
+      <span style="color:var(--accent);">Parada  1</span> <span style="color:var(--ink-muted);">→</span> <span>Tuxtla Gutiérrez</span>
+      <span style="color:var(--accent);">Parada  2</span> <span style="color:var(--ink-muted);">→</span> <span>Villahermosa</span>
+      <span style="color:var(--accent);">Parada  3</span> <span style="color:var(--ink-muted);">→</span> <span>Campeche</span>
+      <span style="color:var(--accent);">Parada  4</span> <span style="color:var(--ink-muted);">→</span> <span>Mérida</span>
+      <span style="color:var(--accent);">Parada  5</span> <span style="color:var(--ink-muted);">→</span> <span>Chetumal</span>
+      <span style="color:var(--accent);">Parada  6</span> <span style="color:var(--ink-muted);">→</span> <span>Xalapa</span>
+      <span style="color:var(--accent);">Parada  7</span> <span style="color:var(--ink-muted);">→</span> <span>Pachuca</span>
+      <span style="color:var(--accent);">Parada  8</span> <span style="color:var(--ink-muted);">→</span> <span>Querétaro</span>
+      <span style="color:var(--accent);">Parada  9</span> <span style="color:var(--ink-muted);">→</span> <span>Guanajuato</span>
+      <span style="color:var(--accent);">Parada 10</span> <span style="color:var(--ink-muted);">→</span> <span>Aguascalientes</span>
+      <span style="color:var(--accent);">Parada 11</span> <span style="color:var(--ink-muted);">→</span> <span>Zacatecas</span>
+      <span style="color:var(--accent);">Parada 12</span> <span style="color:var(--ink-muted);">→</span> <span>San Luis Potosí</span>
+      <span style="color:var(--accent);">Parada 13</span> <span style="color:var(--ink-muted);">→</span> <span>Ciudad Victoria</span>
+      <span style="color:var(--accent);">Parada 14</span> <span style="color:var(--ink-muted);">→</span> <span>Monterrey</span>
+      <span style="color:var(--accent);">Parada 15</span> <span style="color:var(--ink-muted);">→</span> <span>Saltillo</span>
+      <span style="color:var(--accent);">Parada 16</span> <span style="color:var(--ink-muted);">→</span> <span>Victoria de Durango</span>
+      <span style="color:var(--accent);">Parada 17</span> <span style="color:var(--ink-muted);">→</span> <span>Chihuahua</span>
+      <span style="color:var(--accent);">Parada 18</span> <span style="color:var(--ink-muted);">→</span> <span>Hermosillo</span>
+      <span style="color:var(--accent);">Parada 19</span> <span style="color:var(--ink-muted);">→</span> <span>Mexicali</span>
+      <span style="color:var(--accent);">Parada 20</span> <span style="color:var(--ink-muted);">→</span> <span>La Paz</span>
+      <span style="color:var(--accent);">Parada 21</span> <span style="color:var(--ink-muted);">→</span> <span>Culiacán</span>
+      <span style="color:var(--accent);">Parada 22</span> <span style="color:var(--ink-muted);">→</span> <span>Tepic</span>
+      <span style="color:var(--accent);">Parada 23</span> <span style="color:var(--ink-muted);">→</span> <span>Guadalajara</span>
+      <span style="color:var(--accent);">Parada 24</span> <span style="color:var(--ink-muted);">→</span> <span>Colima</span>
+      <span style="color:var(--accent);">Parada 25</span> <span style="color:var(--ink-muted);">→</span> <span>Morelia</span>
+      <span style="color:var(--accent);">Parada 26</span> <span style="color:var(--ink-muted);">→</span> <span>Toluca</span>
+      <span style="color:var(--accent);">Parada 27</span> <span style="color:var(--ink-muted);">→</span> <span>Ciudad de México</span>
+      <span style="color:var(--accent);">Parada 28</span> <span style="color:var(--ink-muted);">→</span> <span>Cuernavaca</span>
+      <span style="color:var(--accent);">Parada 29</span> <span style="color:var(--ink-muted);">→</span> <span>Chilpancingo</span>
+      <span style="color:var(--accent);">Parada 30</span> <span style="color:var(--ink-muted);">→</span> <span>Puebla</span>
+      <span style="color:var(--accent);">Parada 31</span> <span style="color:var(--ink-muted);">→</span> <span>Tlaxcala</span>
+      <span style="color:var(--accent);font-weight:600;">Regreso</span>     <span style="color:var(--ink-muted);">→</span> <span>Oaxaca <em style="color:var(--ink-muted);">(ciudad de origen)</em></span>
     </div>
   </div>
 
-  <!-- § 8 GA TSP -->
-  <div class="section-block" id="s8">
-    <h2 class="section-title">8. Algoritmo Genético para el TSP</h2>
-    <div class="section-rule"></div>
+  <p>La Figura 11 muestra la animación del recorrido construido por el ACO sobre el mapa de México, permitiendo visualizar la secuencia geográfica de las 32 capitales visitadas y la coherencia espacial de la ruta encontrada.</p>
 
-    <p>Además del ACO, se implementó un <strong>Algoritmo Genético (GA)</strong> para resolver el mismo problema de ruteo. El GA representa las soluciones como permutaciones de los índices de las 32 capitales y evoluciona la población mediante selección, cruce y mutación.</p>
-
-    <h3 class="subsection-title">Estructura del algoritmo</h3>
-    <p>El flujo general del GA comprende los siguientes pasos: (1) inicialización de una población de rutas aleatorias; (2) evaluación del costo total de cada ruta; (3) selección mediante torneo; (4) cruce con los métodos <em>Order Crossover</em> (OX) y <em>Partially Mapped Crossover</em> (PMX); (5) mutación por inversión, intercambio o mezcla aleatoria de un segmento; y (6) creación de la siguiente generación con elitismo.</p>
-
-    <h4 class="inner-title">Parámetros utilizados</h4>
-    <div class="param-grid">
-      <span class="param-key">population_size</span><span class="param-val">300</span>
-      <span class="param-key">elite_size</span><span class="param-val">30 (~10 % de la población)</span>
-      <span class="param-key">mutation_rate</span><span class="param-val">0.05</span>
-      <span class="param-key">tournament_size</span><span class="param-val">5</span>
-      <span class="param-key">crossover_method</span><span class="param-val">Order Crossover (OX)</span>
-      <span class="param-key">mutation_method</span><span class="param-val">Inversión de segmento</span>
+  <div class="figure-block">
+    <div class="figure-placeholder">
+      <img src="ruta_aco_optima.gif" alt="GIF de la ruta óptima ACO sobre el mapa de México" width="400">
     </div>
-
-    <h3 class="subsection-title">Resultado obtenido</h3>
-
-    <div class="callout">
-      <div class="callout-label">Mejor solución — GA</div>
-      <p style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);margin:0;"><strong>Costo total: $54,440.77 MXN</strong></p>
-    </div>
-
-    <!-- Placeholder figura GA estática -->
-    <div class="figure-block">
-      <div class="figure-placeholder">
-        <img src="ruta_ga_estatica.png" alt="Mapa estático de la mejor ruta GA" width="400">
-      </div>
-      <div class="figure-caption"><strong>Figura 5.</strong> Mejor ruta encontrada por el Algoritmo Genético para las 32 capitales de México. Costo total: $54,440.77 MXN.</div>
-    </div>
-
-    <!-- Placeholder figura GA animada -->
-    <div class="figure-block">
-      <div class="figure-placeholder">
-        <img src="ruta_ga_animada.gif" alt="Animación de la evolución generacional del GA en la construcción de la ruta óptima" width="400">
-      </div>
-      <div class="figure-caption"><strong>Figura 6.</strong> GIF que ilustra la evolución generacional del Algoritmo Genético en la construcción de la ruta óptima sobre las 32 capitales.</div>
-    </div>
-
-    <h3 class="subsection-title">Conclusiones del TSP</h3>
-    <p>Ambos métodos —ACO y GA— lograron obtener soluciones de calidad comparable. El GA, gracias al elitismo, garantiza que las mejores rutas encontradas no se pierdan entre generaciones. La mutación por inversión demostró ser especialmente efectiva para mantener diversidad sin deteriorar demasiado las soluciones existentes. El ACO, por su parte, refuerza de manera natural las rutas más cortas a través del mecanismo de feromonas, lo que lo hace robusto ante la alta dimensionalidad del espacio de permutaciones.</p>
+    <div class="figure-caption"><strong>Figura 11.</strong> Animación del recorrido óptimo encontrado por ACO entre las 32 capitales de México. El GIF muestra la construcción progresiva de la ruta, la posición actual (punto rojo), el cierre del ciclo y el costo total al finalizar.</div>
   </div>
 
-  <!-- § 9 Prompts -->
-  <div class="section-block" id="s9">
-    <h2 class="section-title">9. Prompts principales utilizados</h2>
+  <p>El hallazgo principal es la coherencia geográfica de la solución: el ACO construye un recorrido que agrupa las ciudades por regiones (sureste → golfo → centro → norte → noroeste → occidente → centro), evitando cruces innecesarios. Esta estructura emergió sin ninguna guía geográfica explícita, únicamente a partir del mecanismo de feromonas y la información heurística de costo entre ciudades. Cabe destacar que la mejor solución se encontró en la iteración 16 de 19 ejecutadas, lo que evidencia una convergencia excepcionalmente rápida.</p>
+
+</div>
+
+
+<!-- § 8 GA TSP -->
+<div class="section-block" id="s8">
+  <h2 class="section-title">8. Algoritmo Genético para el TSP</h2>
+  <div class="section-rule"></div>
+
+  <p>Además del ACO, se implementó un <strong>Algoritmo Genético (GA)</strong> para resolver el mismo problema de ruteo. El GA representa las soluciones como permutaciones de los índices de las 32 capitales y evoluciona la población mediante selección, cruce y mutación.</p>
+
+  <h3 class="subsection-title">Estructura del algoritmo</h3>
+  <p>El flujo general del GA comprende los siguientes pasos: (1) inicialización de una población de rutas aleatorias; (2) evaluación del costo total de cada ruta; (3) selección mediante torneo; (4) cruce con los métodos <em>Order Crossover</em> (OX) y <em>Partially Mapped Crossover</em> (PMX); (5) mutación por inversión, intercambio o mezcla aleatoria de un segmento; y (6) creación de la siguiente generación con elitismo.</p>
+
+  <h4 class="inner-title">Parámetros utilizados</h4>
+  <div class="param-grid">
+    <span class="param-key">population_size</span>  <span class="param-val">200</span>
+    <span class="param-key">elite_size</span>        <span class="param-val">20 (~10 % de la población)</span>
+    <span class="param-key">mutation_rate</span>     <span class="param-val">0.05</span>
+    <span class="param-key">tournament_size</span>   <span class="param-val">5</span>
+    <span class="param-key">crossover_method</span>  <span class="param-val">Order Crossover (OX)</span>
+    <span class="param-key">mutation_method</span>   <span class="param-val">Inversión de segmento</span>
+    <span class="param-key">early_stopping</span>    <span class="param-val">50 generaciones sin mejora</span>
+  </div>
+
+  <h3 class="subsection-title">Resultado obtenido</h3>
+
+  <div class="callout">
+    <div class="callout-label">Mejor solución — GA · ✓ Método ganador</div>
+    <p style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:var(--accent);margin:0 0 0.5rem;">
+      <strong>Costo total: $55,097.76 MXN</strong>
+    </p>
+    <p style="font-size:0.85rem;color:var(--ink-light);margin:0;">
+      Costo inicial: $145,845.80 MXN · Mejora: −$90,748.04 (−62.2 %)<br>
+      Mejor solución en generación 84 · Parada anticipada en generación 134 · Runtime: ~2 s
+    </p>
+  </div>
+
+  <h4 class="inner-title">Mejor ruta encontrada — GA (inicio: Puebla)</h4>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;line-height:2;">
+    <div style="display:grid;grid-template-columns:auto auto 1fr;gap:0 1rem;">
+      <span style="color:var(--accent);font-weight:600;">Inicio</span>      <span style="color:var(--ink-muted);">→</span> <span>Puebla</span>
+      <span style="color:var(--accent);">Parada  1</span> <span style="color:var(--ink-muted);">→</span> <span>Chilpancingo</span>
+      <span style="color:var(--accent);">Parada  2</span> <span style="color:var(--ink-muted);">→</span> <span>Cuernavaca</span>
+      <span style="color:var(--accent);">Parada  3</span> <span style="color:var(--ink-muted);">→</span> <span>Ciudad de México</span>
+      <span style="color:var(--accent);">Parada  4</span> <span style="color:var(--ink-muted);">→</span> <span>Toluca</span>
+      <span style="color:var(--accent);">Parada  5</span> <span style="color:var(--ink-muted);">→</span> <span>Morelia</span>
+      <span style="color:var(--accent);">Parada  6</span> <span style="color:var(--ink-muted);">→</span> <span>Guadalajara</span>
+      <span style="color:var(--accent);">Parada  7</span> <span style="color:var(--ink-muted);">→</span> <span>Colima</span>
+      <span style="color:var(--accent);">Parada  8</span> <span style="color:var(--ink-muted);">→</span> <span>Tepic</span>
+      <span style="color:var(--accent);">Parada  9</span> <span style="color:var(--ink-muted);">→</span> <span>Culiacán</span>
+      <span style="color:var(--accent);">Parada 10</span> <span style="color:var(--ink-muted);">→</span> <span>La Paz</span>
+      <span style="color:var(--accent);">Parada 11</span> <span style="color:var(--ink-muted);">→</span> <span>Mexicali</span>
+      <span style="color:var(--accent);">Parada 12</span> <span style="color:var(--ink-muted);">→</span> <span>Hermosillo</span>
+      <span style="color:var(--accent);">Parada 13</span> <span style="color:var(--ink-muted);">→</span> <span>Chihuahua</span>
+      <span style="color:var(--accent);">Parada 14</span> <span style="color:var(--ink-muted);">→</span> <span>Durango</span>
+      <span style="color:var(--accent);">Parada 15</span> <span style="color:var(--ink-muted);">→</span> <span>Zacatecas</span>
+      <span style="color:var(--accent);">Parada 16</span> <span style="color:var(--ink-muted);">→</span> <span>San Luis Potosí</span>
+      <span style="color:var(--accent);">Parada 17</span> <span style="color:var(--ink-muted);">→</span> <span>Cd. Victoria</span>
+      <span style="color:var(--accent);">Parada 18</span> <span style="color:var(--ink-muted);">→</span> <span>Monterrey</span>
+      <span style="color:var(--accent);">Parada 19</span> <span style="color:var(--ink-muted);">→</span> <span>Saltillo</span>
+      <span style="color:var(--accent);">Parada 20</span> <span style="color:var(--ink-muted);">→</span> <span>Aguascalientes</span>
+      <span style="color:var(--accent);">Parada 21</span> <span style="color:var(--ink-muted);">→</span> <span>Guanajuato</span>
+      <span style="color:var(--accent);">Parada 22</span> <span style="color:var(--ink-muted);">→</span> <span>Querétaro</span>
+      <span style="color:var(--accent);">Parada 23</span> <span style="color:var(--ink-muted);">→</span> <span>Pachuca</span>
+      <span style="color:var(--accent);">Parada 24</span> <span style="color:var(--ink-muted);">→</span> <span>Tlaxcala</span>
+      <span style="color:var(--accent);">Parada 25</span> <span style="color:var(--ink-muted);">→</span> <span>Xalapa</span>
+      <span style="color:var(--accent);">Parada 26</span> <span style="color:var(--ink-muted);">→</span> <span>Villahermosa</span>
+      <span style="color:var(--accent);">Parada 27</span> <span style="color:var(--ink-muted);">→</span> <span>Chetumal</span>
+      <span style="color:var(--accent);">Parada 28</span> <span style="color:var(--ink-muted);">→</span> <span>Mérida</span>
+      <span style="color:var(--accent);">Parada 29</span> <span style="color:var(--ink-muted);">→</span> <span>Campeche</span>
+      <span style="color:var(--accent);">Parada 30</span> <span style="color:var(--ink-muted);">→</span> <span>Tuxtla Gutiérrez</span>
+      <span style="color:var(--accent);">Parada 31</span> <span style="color:var(--ink-muted);">→</span> <span>Oaxaca</span>
+      <span style="color:var(--accent);font-weight:600;">Regreso</span>     <span style="color:var(--ink-muted);">→</span> <span>Puebla <em style="color:var(--ink-muted);">(ciudad de origen)</em></span>
+    </div>
+  </div>
+
+  <p>La Figura 12 muestra el mapa estático de la mejor ruta encontrada por el GA, permitiendo evaluar visualmente la coherencia geográfica del recorrido optimizado sobre el territorio mexicano.</p>
+
+  <div class="figure-block">
+    <div class="figure-placeholder">
+      <img src="ruta_ga_estatica.png" alt="Mapa estático de la mejor ruta GA" width="400">
+    </div>
+    <div class="figure-caption"><strong>Figura 12.</strong> Mejor ruta encontrada por el Algoritmo Genético para las 32 capitales de México. Costo total: $55,097.76 MXN.</div>
+  </div>
+
+  <p>Al igual que el ACO, el GA converge a una ruta geográficamente coherente que recorre el país en sentido sur-centro-norte-noroeste-occidente-sureste, sin cruces visibles entre segmentos. La diferencia clave respecto al ACO es la secuencia en el centro del país (Puebla → sur de México → centro → occidente), que el GA resuelve de forma ligeramente más eficiente en términos de costo total.</p>
+
+  <p>La Figura 13 ilustra la evolución generacional del GA a lo largo de las 134 generaciones ejecutadas, mostrando cómo la calidad de la mejor solución mejora progresivamente antes de estabilizarse.</p>
+
+  <div class="figure-block">
+    <div class="figure-placeholder">
+      <img src="ruta_ga_animada.gif" alt="Animación de la evolución generacional del GA" width="400">
+    </div>
+    <div class="figure-caption"><strong>Figura 13.</strong> GIF que ilustra la evolución generacional del Algoritmo Genético. La parada anticipada ocurrió en la generación 134 tras 50 generaciones consecutivas sin mejora.</div>
+  </div>
+
+  <p>Se observa que la mayor parte de la mejora ocurre entre las generaciones 0 y 42, donde el costo cae de $145,845 a $56,586 MXN (reducción del 61.2 %). A partir de la generación 62 los avances son marginales, y la solución final de $55,097.76 MXN se estabiliza en la generación 84. Esto sugiere que el operador OX y la mutación por inversión son muy efectivos en las etapas tempranas de exploración, pero la explotación fina de la solución requiere muchas más generaciones.</p>
+
+  <h3 class="subsection-title">Conclusiones del TSP</h3>
+  <p>Ambos métodos —ACO y GA— obtuvieron soluciones de calidad muy similar, con una diferencia de apenas el 1.4 % entre sí. En esta ejecución el GA logró superar al ACO en costo final, lo que evidencia que con los operadores de cruce y mutación correctamente configurados, el algoritmo genético puede rivalizar e incluso superar a la colonia de hormigas en problemas de ruteo georreferenciado. El ACO, por su parte, destacó por su extrema velocidad de convergencia, alcanzando una solución competitiva en apenas 19 iteraciones.</p>
+</div>
+
+
+<!-- § 9 COMPARACIÓN -->
+<div class="section-block" id="s9">
+  <h2 class="section-title">9. Comparación de resultados: ACO vs Algoritmo Genético</h2>
+  <div class="section-rule"></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Parámetro</th>
+          <th>ACO</th>
+          <th>Algoritmo Genético</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Costo total óptimo</strong></td>
+          <td style="font-family:'JetBrains Mono',monospace;">$55,872.54 MXN</td>
+          <td style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:600;">$55,097.76 MXN ✓</td>
+        </tr>
+        <tr>
+          <td><strong>Costo inicial (iter./gen. 0)</strong></td>
+          <td style="font-family:'JetBrains Mono',monospace;">$62,748.22 MXN</td>
+          <td style="font-family:'JetBrains Mono',monospace;">$145,845.80 MXN</td>
+        </tr>
+        <tr>
+          <td><strong>Mejora total obtenida</strong></td>
+          <td>−$6,875.68 (−11.0 %)</td>
+          <td>−$90,748.04 (−62.2 %)</td>
+        </tr>
+        <tr>
+          <td><strong>Iteraciones / Generaciones ejecutadas</strong></td>
+          <td>19 iteraciones</td>
+          <td>134 generaciones</td>
+        </tr>
+        <tr>
+          <td><strong>Iteraciones configuradas</strong></td>
+          <td>500 iteraciones</td>
+          <td>500 generaciones</td>
+        </tr>
+        <tr>
+          <td><strong>Criterio de parada anticipada</strong></td>
+          <td>20 iteraciones sin mejora</td>
+          <td>50 generaciones sin mejora</td>
+        </tr>
+        <tr>
+          <td><strong>Iteración / Generación de mejor solución</strong></td>
+          <td>Iter. 16 ($55,872.54)</td>
+          <td>Gen. 84 ($55,097.76)</td>
+        </tr>
+        <tr>
+          <td><strong>Tamaño de población / colonia</strong></td>
+          <td>200 hormigas</td>
+          <td>200 individuos</td>
+        </tr>
+        <tr>
+          <td><strong>Tiempo de ejecución</strong></td>
+          <td>&lt; 1 minuto</td>
+          <td>~2 segundos</td>
+        </tr>
+        <tr>
+          <td><strong>Ciudad de inicio de ruta</strong></td>
+          <td>Oaxaca</td>
+          <td>Puebla</td>
+        </tr>
+        <tr>
+          <td><strong>Método ganador</strong></td>
+          <td colspan="2" style="text-align:center;color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:600;">✓ GA — menor costo absoluto ($55,097.76 MXN, −1.4 % vs ACO)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="table-caption"><strong>Tabla 2.</strong> Comparación de resultados entre ACO y Algoritmo Genético para el TSP con 32 capitales de México.</p>
+
+  <div class="conclusion-box" style="margin-top:2rem;">
+    <h3>Conclusiones comparativas: ACO vs GA</h3>
+    <ul>
+      <li><strong>Calidad de solución:</strong> en esta ejecución el GA obtuvo la ruta de menor costo ($55,097.76 vs $55,872.54 MXN), superando al ACO por un margen estrecho del 1.4 %. Esto demuestra que ambos algoritmos son competitivos y que pequeñas variaciones estocásticas pueden inclinar la balanza en uno u otro sentido.</li>
+      <li><strong>Velocidad de convergencia:</strong> el ACO convergió en apenas 19 iteraciones, frente a las 134 generaciones del GA. El mecanismo de feromonas orientó la búsqueda hacia soluciones competitivas de forma considerablemente más rápida, aunque sin alcanzar la calidad final del GA.</li>
+      <li><strong>Exploración inicial:</strong> el GA partió de soluciones muy alejadas del óptimo (costo inicial ~$146 K MXN) y realizó una mejora porcentual mucho mayor (62.2 %), evidenciando su mayor capacidad de exploración amplia del espacio de búsqueda desde permutaciones iniciales aleatorias.</li>
+      <li><strong>Sensibilidad al punto de inicio:</strong> el ACO depende menos del nodo de partida gracias al mecanismo de feromonas globales; el GA, en cambio, evolucionó de forma consistente independientemente del orden inicial, consolidando rutas geográficamente coherentes a través de sus operadores genéticos.</li>
+      <li><strong>Recomendación práctica:</strong> para este TSP georreferenciado con matriz de costos reales, ambos métodos son viables y producen resultados muy similares. El ACO es preferible cuando se requiere una solución rápida con pocas iteraciones; el GA es recomendable cuando se dispone de más tiempo de cómputo y se busca exprimir la calidad de la solución final.</li>
+    </ul>
+  </div>
+
+  <!-- RUTA FINAL SUGERIDA -->
+  <div class="callout" style="margin-top:2rem;">
+    <div class="callout-label">Ruta final sugerida al vendedor — GA · Solución óptima</div>
+    <p style="margin-bottom:1rem;font-size:0.88rem;color:var(--ink-light);">
+      Orden de visitas optimizado minimizando costo total (tiempo del vendedor + combustible + casetas de peaje).
+    </p>
+
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;line-height:2;">
+      <div style="display:grid;grid-template-columns:auto auto 1fr;gap:0 1rem;">
+        <span style="color:var(--accent);font-weight:600;">Inicio</span>      <span style="color:var(--ink-muted);">→</span> <span>Puebla</span>
+        <span style="color:var(--accent);">Parada  1</span> <span style="color:var(--ink-muted);">→</span> <span>Chilpancingo</span>
+        <span style="color:var(--accent);">Parada  2</span> <span style="color:var(--ink-muted);">→</span> <span>Cuernavaca</span>
+        <span style="color:var(--accent);">Parada  3</span> <span style="color:var(--ink-muted);">→</span> <span>Ciudad de México</span>
+        <span style="color:var(--accent);">Parada  4</span> <span style="color:var(--ink-muted);">→</span> <span>Toluca</span>
+        <span style="color:var(--accent);">Parada  5</span> <span style="color:var(--ink-muted);">→</span> <span>Morelia</span>
+        <span style="color:var(--accent);">Parada  6</span> <span style="color:var(--ink-muted);">→</span> <span>Guadalajara</span>
+        <span style="color:var(--accent);">Parada  7</span> <span style="color:var(--ink-muted);">→</span> <span>Colima</span>
+        <span style="color:var(--accent);">Parada  8</span> <span style="color:var(--ink-muted);">→</span> <span>Tepic</span>
+        <span style="color:var(--accent);">Parada  9</span> <span style="color:var(--ink-muted);">→</span> <span>Culiacán</span>
+        <span style="color:var(--accent);">Parada 10</span> <span style="color:var(--ink-muted);">→</span> <span>La Paz</span>
+        <span style="color:var(--accent);">Parada 11</span> <span style="color:var(--ink-muted);">→</span> <span>Mexicali</span>
+        <span style="color:var(--accent);">Parada 12</span> <span style="color:var(--ink-muted);">→</span> <span>Hermosillo</span>
+        <span style="color:var(--accent);">Parada 13</span> <span style="color:var(--ink-muted);">→</span> <span>Chihuahua</span>
+        <span style="color:var(--accent);">Parada 14</span> <span style="color:var(--ink-muted);">→</span> <span>Durango</span>
+        <span style="color:var(--accent);">Parada 15</span> <span style="color:var(--ink-muted);">→</span> <span>Zacatecas</span>
+        <span style="color:var(--accent);">Parada 16</span> <span style="color:var(--ink-muted);">→</span> <span>San Luis Potosí</span>
+        <span style="color:var(--accent);">Parada 17</span> <span style="color:var(--ink-muted);">→</span> <span>Cd. Victoria</span>
+        <span style="color:var(--accent);">Parada 18</span> <span style="color:var(--ink-muted);">→</span> <span>Monterrey</span>
+        <span style="color:var(--accent);">Parada 19</span> <span style="color:var(--ink-muted);">→</span> <span>Saltillo</span>
+        <span style="color:var(--accent);">Parada 20</span> <span style="color:var(--ink-muted);">→</span> <span>Aguascalientes</span>
+        <span style="color:var(--accent);">Parada 21</span> <span style="color:var(--ink-muted);">→</span> <span>Guanajuato</span>
+        <span style="color:var(--accent);">Parada 22</span> <span style="color:var(--ink-muted);">→</span> <span>Querétaro</span>
+        <span style="color:var(--accent);">Parada 23</span> <span style="color:var(--ink-muted);">→</span> <span>Pachuca</span>
+        <span style="color:var(--accent);">Parada 24</span> <span style="color:var(--ink-muted);">→</span> <span class="city">Tlaxcala</span>
+        <span style="color:var(--accent);">Parada 25</span> <span style="color:var(--ink-muted);">→</span> <span>Xalapa</span>
+        <span style="color:var(--accent);">Parada 26</span> <span style="color:var(--ink-muted);">→</span> <span>Villahermosa</span>
+        <span style="color:var(--accent);">Parada 27</span> <span style="color:var(--ink-muted);">→</span> <span>Chetumal</span>
+        <span style="color:var(--accent);">Parada 28</span> <span style="color:var(--ink-muted);">→</span> <span>Mérida</span>
+        <span style="color:var(--accent);">Parada 29</span> <span style="color:var(--ink-muted);">→</span> <span>Campeche</span>
+        <span style="color:var(--accent);">Parada 30</span> <span style="color:var(--ink-muted);">→</span> <span>Tuxtla Gutiérrez</span>
+        <span style="color:var(--accent);">Parada 31</span> <span style="color:var(--ink-muted);">→</span> <span>Oaxaca</span>
+        <span style="color:var(--accent);font-weight:600;">Regreso</span>     <span style="color:var(--ink-muted);">→</span> <span>Puebla <em style="color:var(--ink-muted);">(ciudad de origen)</em></span>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--accent-pale);">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--ink-muted);">Costo total del recorrido</span>
+      <p style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--accent);margin:0.2rem 0 0;">$55,097.76 <span style="font-size:1rem;font-weight:400;color:var(--ink-light);">MXN</span></p>
+    </div>
+  </div>
+</div>
+
+  <!-- § 10 Prompts -->
+  <div class="section-block" id="s10">
+    <h2 class="section-title">10. Prompts principales utilizados</h2>
     <div class="section-rule"></div>
 
     <p>A continuación se transcriben los prompts más relevantes utilizados durante el desarrollo del trabajo. Su uso fue determinante para agilizar tanto la implementación técnica como la generación de visualizaciones.</p>
@@ -881,22 +1221,22 @@ Por cada par de ciudades se extrae el tiempo de viaje en horas, el costo de case
       <div class="contrib-card">
         <div class="contrib-name">Juan Felipe Moreno Ruiz</div>
         <ul>
-          <li>implementación del componente ACO y Entrenamiento]</li>
-          <li>web scraping CAPUFE y construcción de matrices de costo]</li>
+          <li>implementación del componente ACO y Entrenamiento</li>
+          <li>web scraping CAPUFE y construcción de matrices de costo</li>
         </ul>
       </div>
       <div class="contrib-card">
         <div class="contrib-name">Daniel Felipe Garzón Acosta</div>
         <ul>
-          <li>[Implementación del GA para el TSP y entrenamiento]</li>
-          <li>[Elaboración del reporte]</li>
+          <li>Implementación del GA para el TSP y entrenamiento</li>
+          <li>Elaboración del reporte</li>
         </ul>
       </div>
       <div class="contrib-card">
         <div class="contrib-name">Jhanuar Castro López</div>
         <ul>
-          <li>[Generación de animaciones y visualizaciones en la parte 1]</li>
-          <li>[Elaboración de clases segun las funciones escogidas]</li>
+          <li>Generación de animaciones y visualizaciones en la parte 1</li>
+          <li>Elaboración de clases segun las funciones escogidas</li>
           <li></li>
         </ul>
       </div>

@@ -98,7 +98,7 @@ import matplotlib.patches as mpatches
 
 #GENERACIÓN DEL GIF ANIMADO 
 
-'''ciudades = [
+ciudades = [
     "Aguascalientes", "Mexicali", "La Paz", "Campeche", "Tuxtla Gutiérrez",
     "Chihuahua", "Ciudad de México", "Saltillo", "Colima", "Durango",
     "Guanajuato", "Chilpancingo", "Pachuca", "Guadalajara", "Toluca",
@@ -172,7 +172,7 @@ def animate(frame):
             transform=ax.transAxes, fontsize=9,
             verticalalignment="top", color="#333333")
 
-# ── Generar animación ──────────────────────────────────────────────────────────
+'''# ── Generar animación ──────────────────────────────────────────────────────────
 # total de frames = número de ciudades + 5 frames finales para pausar al terminar
 frames_totales = len(ruta) + 5
 
@@ -190,7 +190,7 @@ ani.save("ruta_optima.gif", writer="pillow", fps=3, dpi=120)
 print("GIF guardado como ruta_optima.gif")
 
 # ── También mostrar en pantalla ────────────────────────────────────────────────
-plt.show()'''
+plt.show()
 # GENERACIÓN DEL GIF ANIMADO
 fig, ax = plt.subplots(figsize=(12, 8))
 ruta = list(optimizer.best_path)
@@ -229,7 +229,7 @@ def animate(frame):
 ani = animation.FuncAnimation(fig, animate, frames=len(ruta) + 5, interval=300, repeat=True)
 ani.save("ruta_optima.gif", writer="pillow", fps=3, dpi=120)
 print("GIF guardado como ruta_optima.gif")
-plt.show()
+plt.show()'''
 
 
 # ── RUTA FINAL PARA EL VENDEDOR ───────────────────────────────────────────────
